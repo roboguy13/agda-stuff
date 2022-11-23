@@ -464,6 +464,13 @@ module CategoryProperties
       Iso f′ g′ →
       (f′ ≈ f) × (g′ ≈ g)
 
+  Strict-Initial : ∀ {𝟘 : Obj} →
+    IsInitial 𝟘 →
+    Set (o ⊔ ℓ ⊔ e)
+  Strict-Initial {𝟘} 𝟘-initial =
+    ∀ {A} (f : A ⇒ 𝟘) →
+    Iso f (𝟘-map 𝟘-initial)
+
   Nondegenerate : ∀ {𝟙 𝟘 : Obj} → IsTerminal 𝟙 → IsInitial 𝟘 → Set (ℓ ⊔ e)
   Nondegenerate {𝟙} {𝟘} _ _ = ¬ (𝟙 ≅ 𝟘)
 
@@ -579,115 +586,6 @@ module CategoryProperties
     ∀ {A B} {f : A ⇒ B} → Monic f →
     Σ![ B ⇒ Ω ] λ χ →
       IsPullback B 𝟙 Ω χ tr A f (𝟙-map 𝟙-term {A})
-
-  -- -- 0 -> A
-  -- -- |    | id
-  -- -- v    v
-  -- -- A -> A
-  -- --   id
-  -- 𝟘-id-pullback : ∀ {𝟘 : Obj}
-  --   (𝟘-initial : IsInitial 𝟘) →
-  --   ∀ {A} →
-  --   IsPullback A A A id id 𝟘 (𝟘-map 𝟘-initial) (𝟘-map 𝟘-initial)
-  -- 𝟘-id-pullback 𝟘-initial {A} =
-  --   ∘-resp-≈ refl refl ,
-  --   λ Z f′ g′ p₁′ p₂′ x →
-  --     {!!} ,
-  --     ({!!} , {!!}) ,
-  --     λ n x₁ → {!!}
-
-  -- --      id
-  -- --    A -> A
-  -- -- id |    | f
-  -- --    v    v
-  -- --    A -> 0
-  -- --      f
-  -- 𝟘-id-pullback : ∀ {𝟘 : Obj}
-  --   (𝟘-initial : IsInitial 𝟘) →
-  --   ∀ {A} →
-  --   (f : A ⇒ 𝟘) →
-  --   IsPullback A A 𝟘 f f A id id
-  -- 𝟘-id-pullback 𝟘-initial {A} f =
-  --   let
-  --     e : A ⇒ A
-  --     e = 𝟘-map 𝟘-initial ∘ f
-
-  --     idem : (e ∘ e) ≈ e
-  --     idem = {!!}
-  --   in
-  --   {!!} ,
-  --   λ Z f′ g′ p₁′ p₂′ x →
-  --     let
-  --       p1≈p2 : p₁′ ≈ p₂′
-  --       p1≈p2 = {!!}
-  --     in
-  --     p₂′ ∘ (𝟘-map 𝟘-initial ∘ (f ∘ p₁′)) ,
-  --     ({!!} , {!!}) ,
-  --     λ n x₁ → {!!}
-
-
-  -- --      f
-  -- --    A -> B
-  -- -- id |    | id
-  -- --    v    v
-  -- --    A -> B
-  -- --      f
-  -- id-pullback : ∀ {A B} →
-  --   (f : A ⇒ B) →
-  --   IsPullback A B B f id A id f
-  -- id-pullback {A} f =
-  --   trans right-id (sym left-id) ,
-  --   λ Z f′ g′ p₁′ p₂′ x →
-  --     {!!} , ({!!} , {!!}) , λ n x₁ → {!!}
-
-  -- --     !
-  -- --  A --> 1
-  -- -- f|    !|
-  -- --  v  !  v
-  -- --  0 --> 1
-  -- 𝟘-𝟙-pullback : ∀ {𝟙 𝟘 : Obj} →
-  --   (𝟙-terminal : IsTerminal 𝟙) →
-  --   (𝟘-initial : IsInitial 𝟘) →
-  --   ∀ {A} →
-  --   (f : A ⇒ 𝟘) →
-  --   IsPullback 𝟘 𝟙 𝟙 (𝟘-map 𝟘-initial) id A f (𝟙-map 𝟙-terminal)
-  -- 𝟘-𝟙-pullback {𝟙} {𝟘} 𝟙-terminal 𝟘-initial f =
-  --   let
-  --     g = (f ∘ 𝟘-map 𝟘-initial)
-  --     eq : g ≈ id
-  --     eq = 𝟘⇒𝟘-is-id 𝟘-initial g
-
-  --   in
-  --   𝟙-maps-same 𝟙-terminal ,
-  --   λ Z f′ g′ p₁′ p₂′ x →
-  --     -- let
-  --     --   m = 𝟙-map 𝟙-terminal ∘ (𝟘-map 𝟘-initial ∘ p₁′)
-  --     -- in
-  --     𝟘-map 𝟘-initial ∘ p₁′ , (trans (sym ∘-assoc) (trans (rewrite-left-∘ (sym eq) left-id) refl) , 𝟙-maps-same 𝟙-terminal) , λ n x₁ → {!!}
-
-  -- 𝟘 ∘ f ≈ id ∘ 𝟙
-
-
-  -- 𝟘-𝟙-pullback : ∀ {𝟙 𝟘 : Obj} →
-  --   (𝟙-terminal : IsTerminal 𝟙) →
-  --   (𝟘-initial : IsInitial 𝟘) →
-  --   IsPullback 𝟘 𝟘 𝟙 (𝟘-map 𝟘-initial) (𝟘-map 𝟘-initial) 𝟘 (𝟘-map 𝟘-initial) (𝟘-map 𝟘-initial)
-  -- 𝟘-𝟙-pullback {𝟙} {𝟘} 𝟙-terminal 𝟘-initial =
-  --   refl ,
-  --   λ Z f′ g′ p₁′ p₂′ x →
-  --     let
-  --       -- s : 𝟘 ⇒ Z
-  --       -- s = {!!}
-  --       e : Z ⇒ Z
-  --       e = 𝟘-map 𝟘-initial ∘ p₁′
-
-  --       w = (f′ ∘ p₁′)
-
-  --       eq : (f′ ∘ p₁′) ≈ (g′ ∘ p₂′)
-  --       eq = x
-  --     in
-  --     p₁′ ∘ e , ({!!} , {!!}) , λ n x₁ → {!!}
-
   
 
 

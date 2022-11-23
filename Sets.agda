@@ -83,16 +83,106 @@ module SetsProperties
   𝟙-map : ∀ {A} → (A ⇒ 𝟙)
   𝟙-map = 𝟙-map′ 𝟙-terminal
 
-  𝟙-map-unique : ∀ {A} → (f : A ⇒ 𝟙) → f ≈ 𝟙-map
-  𝟙-map-unique {A} f with 𝟙-terminal A
-  ... | fst , fst₁ , snd = snd f (lift tt)
+  -- 𝟙-map-unique : ∀ {A} → (f : A ⇒ 𝟙) → f ≈ 𝟙-map
+  -- 𝟙-map-unique {A} f with 𝟙-terminal A
+  -- ... | fst , fst₁ , snd = snd f (lift tt)
 
   𝟘-map : ∀ {A} → (𝟘 ⇒ A)
   𝟘-map = 𝟘-map′ 𝟘-initial
 
-  𝟘-map-unique : ∀ {A} → (f : 𝟘 ⇒ A) → f ≈ 𝟘-map
-  𝟘-map-unique {A} f with 𝟘-initial A
-  ... | fst , fst₁ , snd = snd f (lift tt)
+  -- product-proj₁ : ∀ {A B} →
+  --   (A × B) ⇒ A
+  -- product-proj₁ = ?
+
+  ×𝟘≅𝟘 : ∀ {A} → (A × 𝟘) ≅ 𝟘
+  ×𝟘≅𝟘 {A} =
+    let
+      p : (A × 𝟘) ⇒ 𝟘
+      p = product-proj₂ (products A 𝟘)
+
+      u = p ∘ 𝟘-map
+      v = 𝟘-map ∘ p
+
+      eq1 : u ≈ id
+      eq1 = 𝟘-maps-same 𝟘-initial
+
+      -- canon : (A × 𝟘) ⇒ (A × 𝟘)
+      -- canon = products ()
+
+      eq2 : v ≈ id
+      eq2 = {!!}
+    in
+    p , 𝟘-map , eq2 , eq1
+
+  𝟘-strict-initial : Strict-Initial 𝟘-initial
+  𝟘-strict-initial {A} f =
+    let
+      m : A ⇒ A
+      m = 𝟘-map {A} ∘ f
+
+      n : 𝟘 ⇒ 𝟘
+      n = f ∘ 𝟘-map {A}
+
+      eq1 : n ≈ id
+      eq1 = 𝟘⇒𝟘-is-id 𝟘-initial n
+
+      p : (A × 𝟘) ≅ 𝟘
+      p = {!!}
+    in
+    {!!} , eq1
+
+  -- 𝟘-map-unique : ∀ {A} → (f : 𝟘 ⇒ A) → f ≈ 𝟘-map
+  -- 𝟘-map-unique {A} f with 𝟘-initial A
+  -- ... | fst , fst₁ , snd = snd f (lift tt)
+
+  --
+  -- 𝟘 --> B
+  -- |     |
+  -- |     | j
+  -- v     v
+  -- A --> A+B
+  --    i
+  coproduct-pullback : ∀ {A B} →
+    ∃[ f ] ∃[ g ]
+    (IsPullback
+      A B
+      (A ⊎ B)
+      (coproduct-inj₁ (coproducts A B))
+      (coproduct-inj₂ (coproducts A B))
+      𝟘
+      f
+      g)
+  coproduct-pullback {A} {B}
+    with Pullback A B (A ⊎ B) (coproduct-inj₁ (coproducts A B))(coproduct-inj₂ (coproducts A B))
+  ... | fst , fst₁ , fst₂ , fst₃ , snd =
+    𝟘-map , 𝟘-map , 𝟘-maps-same 𝟘-initial ,
+    (λ Z f′ g′ p₁′ p₂′ x →
+      let
+        m , q1 , q2 = (snd Z f′ g′ p₁′ p₂′ x)
+        -- w1 , w2 , w3 = snd Z f′ g′ p₁′ p₂′ x
+        -- w1 , w2 , w3 = snd Z f′ g′ (fst₁ ∘ proj₁ (snd Z f′ g′ p₁′ p₂′ x))  (proj₁ (snd Z f′ g′ p₁′ p₂′ x)) {!!}
+        w1 , w2 , w3 = snd Z f′ g′ (fst₁ ∘ m) p₂′ {!!}
+
+
+        -- eq : (Eq-ℂ Eq-Category.∘ fst₁) (proj₁ (snd Z f′ g′ p₁′ p₂′ x)) ≡ p₁′
+        -- eq = {!!}
+
+        w = w3 {!!} ({!!} , {!!})
+      in
+      {!!} , ({!!} , {!!}) , (λ n x₁ →
+        let q2′ = q2 (𝟘-map ∘ n) ({!!} , {!!})
+        in {!!}))
+
+    -- Pullback : ∀ A B X (f : A ⇒ X) (g : B ⇒ X) →
+  -- inj₁-monic : ∀ {A B} →
+  --   Monic (coproduct-inj₁ (coproducts A B))
+  -- inj₁-monic X g₁ g₂ x =
+  --   {!!}
+  --   -- 𝟚-coseparator λ φ → {!!}
+
+  -- ⊎-disjoint : 
+
+  -- distribute : 
 
   -- 𝟚↪𝟙+𝟙 : Σ (𝟚 ⇒ (𝟙 ⊎ 𝟙)) Monic
   -- 𝟚↪𝟙+𝟙 with coproducts 𝟙 𝟙

@@ -10,16 +10,18 @@ open import Relation.Binary.Structures
 open import Axiom.Extensionality.Propositional
 
 module Yoneda
-  (ℂ : Eq-Category lzero (lsuc lzero))
+  (ℂ : Eq-Category (lsuc lzero) (lsuc lzero))
   -- (≈-is-≡ : ∀ {A B} → Category. ℂ {A} {B} ≡ _≡_)
   where
 
-postulate fun-ext : Extensionality ℓ (lsuc ℓ)
+postulate fun-ext : ∀ {m n} → Extensionality m n
+-- postulate fun-ext-gen : ∀ {m n} → Extensionality m n
 
 Agda' : ∀ m → Category (suc (suc m)) (suc m) (suc m)
 Agda' m = Agda m (lsuc m) _≡_ ≡-IsEquivalence cong cong₂
 
-ℂop : Category lzero (lsuc lzero) (lsuc lzero)
+-- ℂop : Category lzero (lsuc lzero) (lsuc lzero)
+ℂop : Category (lsuc lzero) (lsuc lzero) (lsuc lzero)
 ℂop = Op (Cat ℂ)
 
 よ : Functor ℂop (Agda' lzero)
@@ -41,14 +43,58 @@ Agda' m = Agda m (lsuc m) _≡_ ≡-IsEquivalence cong cong₂
   ; fmap-∘ = λ f → lift (fun-ext λ x → Eq-Category.∘-assoc ℂ)
   }
 
+open Category ℂop
 open CategoryProperties
 open import Data.Product
 
+×-canon-proj₁-eq : ∀ {m} {A B X : Set (suc m)} {f : X → A} {g : X → B} →
+  f ≡ (proj₁ ∘[ Agda' m ] (λ x → f x , g x))
+×-canon-proj₁-eq = fun-ext λ x → _≡_.refl
+
+-- ×-canon-proj₁-≈ : ∀ {X : Category.Obj (Agda' zero)} {A B : Category.Obj (Agda' zero)} {f : X → A} {g : X → B} →
+--   f ≈ (proj₁ ∘ (λ x → f x , g x))
+-- ×-canon-proj₁-≈ {A} {B} {X} {f} {g} with ×-canon-proj₁-eq {A} {B} {X} {f} {g}
+-- ... | refl = λ x → lift _≡_.refl
+
+×-pair-eq : ∀ {m} {A B X : Set (suc m)} → {f : X → A} → {g : X → B} → {n : X → (A × B)} →
+  f ≡ (proj₁ ∘[ Agda' m ] n) →
+  g ≡ (proj₂ ∘[ Agda' m ] n) →
+  ∀ x →
+  n x ≡ (f x , g x)
+×-pair-eq {m} {A} {B} {X} {f} {g} _≡_.refl _≡_.refl x with ×-canon-proj₁-eq {_} {A} {B} {X} {f} {g}
+... | _≡_.refl = _≡_.refl
+
+×-canon-proj₁-eq-よ : ∀ {A B : Obj} {X} {f : X ⇒[ Agda' zero ] actf よ A} {g : X ⇒[ Agda' zero ] actf よ B} →
+  f ≡ (proj₁ ∘[ Agda' zero ] (λ x → f x , g x))
+×-canon-proj₁-eq-よ = fun-ext λ x → _≡_.refl
+
+×-pair-eq-よ : ∀ {A B : Obj} {X} →
+  {f : X ⇒[ Agda' zero ] actf よ A} → {g : X ⇒[ Agda' zero ] actf よ B} → {n : X ⇒[ Agda' zero ] (actf よ A × actf よ B)} →
+  f ≡ (proj₁ ∘[ Agda' zero ] n) →
+  g ≡ (proj₂ ∘[ Agda' zero ] n) →
+  ∀ x →
+  n x ≡ (f x , g x)
+×-pair-eq-よ {A} {B} {X} {f} {g} _≡_.refl _≡_.refl x with ×-canon-proj₁-eq-よ {A} {B} {X} {f} {g}
+... | _≡_.refl = _≡_.refl
+
+-- ×-pair-eq {m} {A} {B} {X} {f} {g} _≡_.refl _≡_.refl x with ×-canon-proj₁-eq {_} {A} {B} {X} {f} {g}
+-- ... | _≡_.refl = _≡_.refl
+
+-- よ-eq : ∀ {A B} → (f g : actf よ A ⇒[ Agda' zero ] actf よ B) →
+--   f ≈[ Agda' zero ] g →
+--   Set
+-- よ-eq = {!!}
+
 よ-× : ∀ {A B : Category.Obj ℂop} →
   IsProduct (Agda' zero) (actf よ A) (actf よ B) (actf よ A × actf よ B)
-よ-× =
-  (λ (a , b) Y → {!!}) ,
-  (λ (a , b) Y → {!!}) ,
-  λ f g → (λ x → {!!}) ,
-          ({!!} , {!!}) ,
-          (λ n x x₁ → {!!})
+よ-× {A} {B} =
+  (λ (a , b) → a) ,
+  (λ (a , b) → b) ,
+  λ {X} f g → (λ x → f x , g x) ,
+          (lift (λ x → lift _≡_.refl) , λ x → lift _≡_.refl) ,
+          (λ n (lift x , y) a →
+            let
+              -- x' : f ≡ comp (Agda' zero) proj₁ n
+              x' = lower (x a)
+            in
+            lift (×-pair-eq-よ {A} {B} {X} {f} {g} {n} (fun-ext λ x₁ → lower (x x₁)) (fun-ext λ y₁ → lower (y y₁)) a))

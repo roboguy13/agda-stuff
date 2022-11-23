@@ -45,9 +45,9 @@ module Agda
 --                f x R f x′
 
 -- Congruence₂ : ∀ {m} → (∀ {A : Set m} → A → A → Set m) → Set (lsuc m)
--- Congruence₂ {m} _R_ =
---   ∀ {A B C : Set m} → (f : A → B → C) →
---                {x x′ : A} → {y y′ : B} →
+  -- Congruence₂ {m} _R_ =
+  --   ∀ {A B C : Set m} → (f : A → B → C) →
+  --                {x x′ : A} → {y y′ : B} →
 --                x R x′ →
 --                y R y′ →
 --                f x y R f x′ y′
@@ -98,19 +98,19 @@ case x of f = f x
 ⊤-lift-canon (lift tt) = eqv-refl
 
 ⊤-IsTerminal : IsTerminal (Lift (lsuc ℓ) ⊤)
-⊤-IsTerminal = (λ _ → lift tt) , lift tt , (λ f x a → lift (⊤-lift-canon (lift tt)))
+⊤-IsTerminal = λ A → (λ _ → lift tt) , (lift tt , (λ n x x₁ → lift (⊤-lift-canon (lift tt)))) --(λ _ → lift tt) , lift tt , (λ f x a → lift (⊤-lift-canon (lift tt)))
 
 ⊥-IsInitial : IsInitial (Lift (lsuc ℓ) ⊥)
-⊥-IsInitial = (λ x → ⊥-elim (lower x)) , lift tt , (λ x x₁ ())
+⊥-IsInitial = λ B → (λ x → ⊥-elim (lower x)) , lift tt , (λ x x₁ ())
 
 ⊤-IsSeparator : IsSeparator (Lift (lsuc ℓ) ⊤)
 ⊤-IsSeparator = λ f x → (f (λ _ → x) (lift tt))
 
 nondegen : Nondegenerate ⊤-IsTerminal ⊥-IsInitial
-nondegen = lift λ z → lower (proj₁ z (lift tt))
+nondegen = λ z → lower (proj₁ z (lift tt)) -- lift λ z → lower (proj₁ z (lift tt))
 
--- ×-canon : ∀ {m} {A B : Set m} {a×b : A × B} → a×b ≡ (proj₁ a×b , proj₂ a×b)
--- ×-canon = refl
+×-canon : ∀ {m} {A B : Set m} {a×b : A × B} → a×b ≈ₒ (proj₁ a×b , proj₂ a×b)
+×-canon {_} {_} {_} {fst , snd} = IsEquivalence.refl ≈ₒ-equiv
 
 ×-IsProduct : ∀ {A B} → IsProduct A B (A × B)
 ×-IsProduct {A} {B} =
@@ -141,7 +141,7 @@ nondegen = lift λ z → lower (proj₁ z (lift tt))
 →false = λ tt → lift false
 
 Agda-nondegen : Nondegenerate ⊤-IsTerminal ⊥-IsInitial
-Agda-nondegen = lift (λ x → lower (proj₁ x (lift tt)))
+Agda-nondegen = λ z → lower (proj₁ z (lift tt)) -- lift (λ x → lower (proj₁ x (lift tt)))
 
 -- Bool-IsCoseparator : IsCoseparator Bool
 -- Bool-IsCoseparator {T} {A} {a₀} {a₁} f x =
