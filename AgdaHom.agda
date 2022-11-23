@@ -10,7 +10,7 @@ open import Level
 module AgdaHom
   (e : Level)
   (ℓ : Level)
-  (Eq-ℂ : Eq-Category e (suc ℓ) )
+  (Eq-ℂ : Eq-Category (suc e) (suc ℓ) )
   -- (let _≈_ = Category._≈_ Eq-ℂ)
 
   -- (_≈ₒ_ : ∀ {m} {A : Set m} → A → A → Set m)
@@ -30,6 +30,7 @@ module AgdaHom
 
 open Category ℂ
 open CategoryProperties ℂ hiding (refl; trans; sym)
+open import Yoneda e ℓ Eq-ℂ
 
 -- open IsEquivalence (Category.equiv ℂ {{!!}} {{!!}})
 
@@ -171,22 +172,33 @@ Hom-Ev (f , x) = f x
 --   A ⇒[ (Op ℂ ×cat ℂ) ] B
 -- to-profunctor = ?
 
-Hom-Exp-1 :
-  (_⊗_ : Obj → Obj → Obj) →
-  (product : ∀ A B → IsProduct A B (A ⊗ B)) →
-  (_⟶_ : Obj → Obj → Obj) →
-  (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
-  (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
-  ∀ {A B X} →
-  Hom X (A ⟶ B) →
-  (Hom X A → Hom X B)
-Hom-Exp-1 _⊗_ product _⟶_ ev exp {A} {B} {X} H-fn H =
-  let
-    -- p = Functor.fmap Hom-F {!!} {!!}
-    p : Hom X A → Hom X (A ⊗ X)
-    p z = Functor.fmap Hom-F {!!} {!!}
-  in
-  {!!}
+-- よ-Exp-1 :
+--   (_⊗_ : Obj → Obj → Obj) →
+--   (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+--   (_⟶_ : Obj → Obj → Obj) →
+--   (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+--   (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+--   ∀ {A B} →
+--   actf よ (A ⟶ B) →
+--   (actf よ A → actf よ B)
+-- よ-Exp-1 = {!!}
+
+-- Hom-Exp-1 :
+--   (_⊗_ : Obj → Obj → Obj) →
+--   (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+--   (_⟶_ : Obj → Obj → Obj) →
+--   (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+--   (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+--   ∀ {A B X} →
+--   Hom X (A ⟶ B) →
+--   (Hom X A → Hom X B)
+-- Hom-Exp-1 _⊗_ product _⟶_ ev exp {A} {B} {X} H-fn H =
+--   let
+--     -- p = Functor.fmap Hom-F {!!} {!!}
+--     p : Hom X A → Hom X (A ⊗ X)
+--     p z = Functor.fmap Hom-F {!!} {!!}
+--   in
+--   {!!}
 
 Curry :
   (_⊗_ : Obj → Obj → Obj) →
