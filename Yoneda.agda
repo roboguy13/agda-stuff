@@ -51,11 +51,6 @@ open import Data.Product
   f ≡ (proj₁ ∘[ Agda' m ] (λ x → f x , g x))
 ×-canon-proj₁-eq = fun-ext λ x → _≡_.refl
 
--- ×-canon-proj₁-≈ : ∀ {X : Category.Obj (Agda' zero)} {A B : Category.Obj (Agda' zero)} {f : X → A} {g : X → B} →
---   f ≈ (proj₁ ∘ (λ x → f x , g x))
--- ×-canon-proj₁-≈ {A} {B} {X} {f} {g} with ×-canon-proj₁-eq {A} {B} {X} {f} {g}
--- ... | refl = λ x → lift _≡_.refl
-
 ×-pair-eq : ∀ {m} {A B X : Set (suc m)} → {f : X → A} → {g : X → B} → {n : X → (A × B)} →
   f ≡ (proj₁ ∘[ Agda' m ] n) →
   g ≡ (proj₂ ∘[ Agda' m ] n) →
@@ -77,14 +72,6 @@ open import Data.Product
 ×-pair-eq-よ {A} {B} {X} {f} {g} _≡_.refl _≡_.refl x with ×-canon-proj₁-eq-よ {A} {B} {X} {f} {g}
 ... | _≡_.refl = _≡_.refl
 
--- ×-pair-eq {m} {A} {B} {X} {f} {g} _≡_.refl _≡_.refl x with ×-canon-proj₁-eq {_} {A} {B} {X} {f} {g}
--- ... | _≡_.refl = _≡_.refl
-
--- よ-eq : ∀ {A B} → (f g : actf よ A ⇒[ Agda' zero ] actf よ B) →
---   f ≈[ Agda' zero ] g →
---   Set
--- よ-eq = {!!}
-
 よ-× : ∀ {A B : Category.Obj ℂop} →
   IsProduct (Agda' zero) (actf よ A) (actf よ B) (actf よ A × actf よ B)
 よ-× {A} {B} =
@@ -93,8 +80,4 @@ open import Data.Product
   λ {X} f g → (λ x → f x , g x) ,
           (lift (λ x → lift _≡_.refl) , λ x → lift _≡_.refl) ,
           (λ n (lift x , y) a →
-            let
-              -- x' : f ≡ comp (Agda' zero) proj₁ n
-              x' = lower (x a)
-            in
             lift (×-pair-eq-よ {A} {B} {X} {f} {g} {n} (fun-ext λ x₁ → lower (x x₁)) (fun-ext λ y₁ → lower (y y₁)) a))
