@@ -29,6 +29,9 @@ open Category ℂ
 open CategoryProperties ℂ
   renaming (𝟙-map to 𝟙-map′; 𝟘-map to 𝟘-map′)
 
+infixr 2 _×_
+infixr 1 _⊎_
+
 record Sets : Set₁ where
   field
     𝟘 : Obj
@@ -100,9 +103,6 @@ module SetsProperties
   --   (A × B) ⇒ A
   -- product-proj₁ = ?
 
-  Agda' : Category (suc (suc zero)) (suc zero) (suc zero ⊔ suc zero)
-  Agda' = Agda zero (suc zero) _≡_ ≡-IsEquivalence cong cong₂
-
   -- Hom : ∀ (A B : Obj) → Category.Obj Agda'
   -- Hom =
   --   Hom′ zero (suc zero) _≡_ (λ {m} {A} → ≡-IsEquivalence {m} {A}) cong cong₂ {ℂ}
@@ -110,14 +110,25 @@ module SetsProperties
   -- Hom-Initial : 
 
   Hom×𝟘 : ∀ {A X : Obj} →
-    CategoryProperties._≅_ Agda' (Hom A X ×₀ Hom A 𝟘) (Hom A 𝟘)
-  Hom×𝟘 =
-    (λ x → proj₂ x) , (λ x → (Hom-Initial 𝟘-initial ∘[Hom] x) , x) ,
-    (λ p →
-      let x , y = p
-      in
-      lift {!!}) ,
-    (λ x → lift {!!})
+    CategoryProperties._≅_ Agda′ (Hom A X ×₀ Hom A 𝟘) (Hom A 𝟘)
+  Hom×𝟘 {A} {X} =
+    (λ x → {!!}) , (λ x → {!!}) , (λ x → {!!}) , λ x → {!!}
+    -- -- (λ x → proj₂ x) , (λ x → ({!!} ∘[Hom] Hom-Initial 𝟘-initial ∘[Hom] x) , {!!}) ,
+    -- (λ x → proj₂ x) , (λ x → Hom-𝟘 𝟘-initial x , x) ,
+    -- (λ p →
+    --   let x , y = p
+
+    --       I = Hom-Initial 𝟘-initial
+    --       w : Hom A X
+    --       w = (Hom-Initial 𝟘-initial ∘[Hom] proj₂ p)
+
+    --       eq : (w , proj₂ p) ≡ p
+    --       eq = {!!}
+    --   in
+    --   lift {!!}) ,
+    -- (λ x → lift _≡_.refl)
+
+
 
   -- ×𝟘≅𝟘 : ∀ {A} → (A × 𝟘) ≅ 𝟘
   -- ×𝟘≅𝟘 {A} =

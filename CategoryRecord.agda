@@ -17,6 +17,7 @@ module CategoryRecord
   where
 
 record Category (o ℓ e : Level) : Set (lsuc (o ⊔ ℓ ⊔ e)) where
+  infixr 9 _∘_
   field
     Obj : Set o
     _⇒_ : Obj → Obj → Set ℓ
@@ -171,6 +172,45 @@ record NatTrans {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁
       (component ∘[ Tgt ] Functor.fmap F f)
         ≈[ Tgt ]
       (Functor.fmap G f ∘[ Tgt ] component)
+
+_×cat_ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} →
+  Category o₁ ℓ₁ e₁ → Category o₂ ℓ₂ e₂ → Category (o₁ ⊔ o₂) (ℓ₁ ⊔ ℓ₂) (e₁ ⊔ e₂)
+_×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; _≈_ = _≈₁_ ; equiv = equiv₁ ; ∘-resp-≈ = ∘-resp-≈₁ ; id = id₁ ; left-id = left-id₁ ; right-id = right-id₁ ; ∘-assoc = ∘-assoc₁ } record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; _≈_ = _≈_ ; equiv = equiv ; ∘-resp-≈ = ∘-resp-≈ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
+  record
+    { Obj = Obj₁ × Obj
+    ; _⇒_ = λ (x₁ , x₂) (y₁ , y₂) → (x₁ ⇒₁ y₁) × (x₂ ⇒ y₂)
+    ; _∘_ = λ (f₁ , f₂) (g₁ , g₂) → (f₁ ∘₁ g₁) , (f₂ ∘ g₂)
+    ; _≈_ = λ (f₁ , f₂) (g₁ , g₂) → (f₁ ≈₁ g₁) × (f₂ ≈ g₂)
+    ; equiv = record
+                { refl = IsEquivalence.refl equiv₁ , IsEquivalence.refl equiv
+                ; sym = λ (x , y) → IsEquivalence.sym equiv₁ x , IsEquivalence.sym equiv y
+                ; trans = λ (x₁ , x₂) (y₁ , y₂) → IsEquivalence.trans equiv₁ x₁ y₁ , IsEquivalence.trans equiv x₂ y₂
+                }
+    ; ∘-resp-≈ = λ (x₁ , x₂) (y₁ , y₂) → ∘-resp-≈₁ x₁ y₁ , ∘-resp-≈ x₂ y₂
+    ; id = id₁ , id
+    ; left-id = left-id₁ , left-id
+    ; right-id = right-id₁ , right-id
+    ; ∘-assoc = ∘-assoc₁ , ∘-assoc
+    }
+
+×cat-proj₁ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} {ℂ : Category o₁ ℓ₁ e₁} {𝔻 : Category o₂ ℓ₂ e₂} → Functor (ℂ ×cat 𝔻) ℂ
+×cat-proj₁ {_} {_} {_} {_} {_} {_} {ℂ} {𝔻} =
+  record
+    { act = proj₁
+    ; fmap = λ (f , g) → f
+    ; fmap-id = λ {A} → IsEquivalence.refl (Category.equiv ℂ)
+    ; fmap-∘ = λ {A} {B} {C} {f} {g} → IsEquivalence.refl (Category.equiv ℂ)
+    }
+
+×cat-proj₂ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} {ℂ : Category o₁ ℓ₁ e₁} {𝔻 : Category o₂ ℓ₂ e₂} → Functor (ℂ ×cat 𝔻) 𝔻
+×cat-proj₂ {_} {_} {_} {_} {_} {_} {ℂ} {𝔻} =
+  record
+    { act = proj₂
+    ; fmap = λ (f , g) → g
+    ; fmap-id = λ {A} → IsEquivalence.refl (Category.equiv 𝔻)
+    ; fmap-∘ = λ {A} {B} {C} {f} {g} → IsEquivalence.refl (Category.equiv 𝔻)
+    }
+
 
 variable o : Level
 variable ℓ : Level
@@ -658,6 +698,25 @@ module CategoryProperties
       m , _ , _ = pair-map {A ⊗ B} s t
     in
     m
+
+  diagonal :
+    (_⊗_ : Obj → Obj → Obj) →
+    (∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    ∀ {A} →
+    A ⇒ (A ⊗ A)
+  diagonal _⊗_ product {A} with product A A
+  ... | x , y , z =
+    let t1 , t2 = z {A} id id
+    in
+    t1
+
+  joined-bimap :
+    (_⊗_ : Obj → Obj → Obj) →
+    (∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    ∀ {Z A B} (f : Z ⇒ A) (g : Z ⇒ B) →
+    Z ⇒ (A ⊗ B)
+  joined-bimap _⊗_ product f g =
+    bimap _⊗_ product f g ∘ diagonal _⊗_ product
 
   IsExponential : ∀ {A B : Obj} →
     (_⊗_ : Obj → Obj → Obj) →
