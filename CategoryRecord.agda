@@ -314,6 +314,34 @@ module CategoryProperties
     in
     trans p (trans q w)
 
+  ∘-assoc4-mid : ∀ {A B C D E : Obj}
+    {f : A ⇒ B}
+    {g : B ⇒ C}
+    {h : C ⇒ D}
+    {i : D ⇒ E} →
+    (i ∘ (h ∘ g) ∘ f) ≈ ((i ∘ h) ∘ (g ∘ f))
+  ∘-assoc4-mid {_} {_} {_} {_} {_} {f} {g} {h} {i} =
+    trans (∘-resp-≈ refl (Category.∘-assoc ℂ)) (sym ∘-assoc4)
+
+  ∘-assoc5-mid : ∀ {A B C D E U : Obj}
+    {f : A ⇒ B}
+    {g : B ⇒ C}
+    {h : C ⇒ D}
+    {i : D ⇒ E} →
+    {j : E ⇒ U} →
+    (j ∘ (i ∘ h ∘ g) ∘ f) ≈ ((j ∘ i) ∘ h ∘ (g ∘ f))
+  ∘-assoc5-mid {_} {_} {_} {_} {_} {_} {f} {g} {h} {i} {j} =
+    let
+      p : (j ∘ ((i ∘ h) ∘ g) ∘ f) ≈ ((j ∘ i) ∘ h ∘ (g ∘ f))
+      p = trans
+            (∘-resp-≈ refl (Category.∘-assoc ℂ))
+            (rewrite-left-∘ refl ∘-assoc4-mid)
+
+      q : (j ∘ (i ∘ h ∘ g) ∘ f) ≈ (j ∘ ((i ∘ h) ∘ g) ∘ f)
+      q = (rewrite-right-∘ (rewrite-left-∘ (sym ∘-assoc) refl) refl)
+    in
+    trans q p
+
   Σ![_⇒_] : ∀ {m : Level} → ∀ A B → (k : (A ⇒ B) → Set m) → Set (ℓ ⊔ m ⊔ e)
   Σ![ A ⇒ B ] P =
     Σ (A ⇒ B) λ m →

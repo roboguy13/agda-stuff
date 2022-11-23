@@ -10,8 +10,8 @@ open import Level
 module AgdaHom
   (e : Level)
   (ℓ : Level)
-  (ℂ : Category e (suc ℓ) e)
-  (let _≈_ = Category._≈_ ℂ)
+  (Eq-ℂ : Eq-Category e (suc ℓ) )
+  -- (let _≈_ = Category._≈_ Eq-ℂ)
 
   -- (_≈ₒ_ : ∀ {m} {A : Set m} → A → A → Set m)
   -- (≈ₒ-equiv : ∀ {m} {A : Set m} → IsEquivalence {_} {m} {A} _≈ₒ_)
@@ -26,13 +26,15 @@ module AgdaHom
   --              f x y ≈ f x′ y′)
   where
 
+ℂ = Cat Eq-ℂ
+
 open Category ℂ
-open CategoryProperties ℂ
+open CategoryProperties ℂ hiding (refl; trans; sym)
 
 -- open IsEquivalence (Category.equiv ℂ {{!!}} {{!!}})
 
 Agda′ : Category (suc (suc ℓ)) (suc ℓ) (suc ℓ ⊔ e)
-Agda′ = Agda ℓ e _≡_ ≡-IsEquivalence cong cong₂
+Agda′ = Agda ℓ e
 -- Agda′ = Agda ? ? (Category._≈_ ℂ) ? ? ? --≈-cong ≈-cong₂
 
 -- reflₒ : ∀ {A B} {f : A ⇒[ Agda′ ] B} → f ≈ₒ f
@@ -75,33 +77,41 @@ Hom-F =
   record
   { act = λ (A , B) → Hom A B
   ; fmap = λ {A} {B} (f₁ , f₂) g → f₂ ∘ g ∘ f₁
-  ; fmap-id = λ {T} x →
+  ; fmap-id = λ {T} →
             let
-              A , B = T
-              eq : (id ∘ x) ≡ x
-              eq = (Category.∘-resp-≈ Agda′ {!!} {!!} ?)
-              -- eq = lower (Category.left-id Agda′ {{!!}} {{!!}} {x} ?)
+              eq1 : (λ g → id {proj₂ T} ∘ g ∘ id {proj₁ T}) ≡ (λ g → id ∘ g)
+              eq1 = fun-ext ℓ ℓ λ x →
+                let
+                  p = Category.right-id ℂ {_} {_} {id ∘ x}
+                in
+                trans (sym (Category.∘-assoc ℂ)) p
+
+              eq2 : (λ (g : proj₁ T ⇒ proj₂ T) → id {proj₂ T} ∘ g) ≡ Category.id Agda′
+              eq2 = fun-ext ℓ ℓ λ x → Category.left-id ℂ {_} {_} {x}
             in
-            -- lift (lower (Category.∘-resp-≈ Agda′ {!!} {!!} (λ z → z)))
-            lift (IsEquivalence.trans ≡-IsEquivalence (lower (Category.left-id Agda′ {Hom A A} {Hom A B} {λ h → {!!}} id)) {!!})
-            -- lift (IsEquivalence.trans ≡-IsEquivalence (lower (Category.left-id Agda′ {Hom {!!} {!!}} {Hom {!!} {!!}} {λ x₁ → x ∘ id} {!!})) {!!})
-            -- -- lift (IsEquivalence.trans ≈ₒ-equiv (lower (Category.left-id Agda′ {Hom A B} {Hom A B} {{!!}} x)) (lower (Category.left-id Agda′ x)))
-            -- let
-            --   eq0 : (id ∘ x ∘ id)  (id ∘ x)
-            --   eq0 = {!!}
+            lift (trans eq1 eq2)
+  ; fmap-∘ = λ {X} {A} {B} {f} {g} →
+           let
+             eq1 :   (λ h → proj₂ f ∘ h ∘ proj₁ f)
+                        ∘[ Agda′ ]
+                     (λ i → proj₂ g ∘ i ∘ proj₁ g)
+                   ≡
+                     λ z → proj₂ f ∘ (proj₂ g ∘ z ∘ proj₁ g) ∘ proj₁ f
+             eq1 = refl
 
-            --   -- x : Hom A B
-            --   eq1 : (id ∘ x) ≈ₒ x
-            --   eq1 = left-id {A} {B} {x}
+             p z = proj₂ g ∘ z ∘ proj₁ g
+             p1 = proj₂ f
+             p2 = proj₂ g
+             p3 = proj₁ g
+             p4 = proj₁ f
+             q = (λ (z : proj₁ X ⇒ proj₂ X) → proj₂ f ∘ (proj₂ g ∘ z ∘ proj₁ g) ∘ proj₁ f)
 
-            --   eq : (id ∘ x ∘ id) ≈ₒ x
-            --   eq = IsEquivalence.trans ≈ₒ-equiv eq0 eq1
-            --     -- IsEquivalence.trans ≈ₒ-equiv (lower (Category.left-id Agda′ {Hom A B} {Hom A B} {λ x₁ → {!!}} x))
-            --     --   (IsEquivalence.trans ≈ₒ-equiv (lower (Category.left-id Agda′ {Hom A B} {Hom A B} {λ x₁ → x₁} x)) {!!})
-            -- in
-            -- lift (IsEquivalence.trans ≈ₒ-equiv eq (IsEquivalence.refl ≈ₒ-equiv))
-    -- left-id : ∀ {A B} → ∀ {f : A ⇒ B} → (id ∘ f) ≈ f
-  ; fmap-∘ = {!!}
+             eq2 :  (λ (z : proj₁ X ⇒ proj₂ X) → proj₂ f ∘ (proj₂ g ∘ z ∘ proj₁ g) ∘ proj₁ f)
+                   ≡
+                    (λ (z : proj₁ X ⇒ proj₂ X) → (proj₂ f ∘ proj₂ g) ∘ z ∘ (proj₁ g ∘ proj₁ f))
+             eq2 = fun-ext ℓ ℓ λ z → ∘-assoc5-mid
+           in
+           lift (trans eq1 eq2)
   }
 
 
@@ -138,10 +148,10 @@ Hom-× :
   Hom X (A ⊗ B)
 Hom-× _⊗_ product (f , g) = joined-bimap _⊗_ product f g
 
-Hom-×-Iso :
-  (_⊗_ : Obj → Obj → Obj) →
-  (∀ A B → IsProduct A B (A ⊗ B)) →
-  ∀ {X A B} →
-  CategoryProperties._≅_ Agda′ (Hom X A × Hom X B) (Hom X (A ⊗ B))
-Hom-×-Iso _⊗_ product =
-  (λ x → Hom-× _⊗_ product x) , (λ x → {!!} , {!!}) , (λ x → lift {!!}) , λ x → lift {!!}
+-- Hom-×-Iso :
+--   (_⊗_ : Obj → Obj → Obj) →
+--   (∀ A B → IsProduct A B (A ⊗ B)) →
+--   ∀ {X A B} →
+--   CategoryProperties._≅_ Agda′ (Hom X A × Hom X B) (Hom X (A ⊗ B))
+-- Hom-×-Iso _⊗_ product =
+--   (λ x → Hom-× _⊗_ product x) , (λ x → {!!} , {!!}) , (λ x → lift {!!}) , λ x → lift {!!}
