@@ -12,7 +12,10 @@ open import Relation.Binary.PropositionalEquality
 
 open import Level
 
-open import Agda hiding (nondegen) renaming (Hom to Hom′)
+open import Agda hiding (nondegen)
+  -- renaming (Hom to Hom′; _∘[Hom]_ to _∘[Hom]′_; Hom-Initial to Hom-Initial′)
+
+import AgdaHom
 
 module Sets
   -- (ℂ : Category lzero (lsuc lzero) (lsuc lzero))
@@ -75,6 +78,7 @@ module SetsProperties
   where
 
   open Sets 𝕍
+  open AgdaHom (suc zero) zero ℂ _≡_ ≡-IsEquivalence cong cong₂
 
   neg : (A : Obj) → Set₁
   neg A = A ⇒ 𝟘
@@ -99,14 +103,21 @@ module SetsProperties
   Agda' : Category (suc (suc zero)) (suc zero) (suc zero ⊔ suc zero)
   Agda' = Agda zero (suc zero) _≡_ ≡-IsEquivalence cong cong₂
 
-  Hom : ∀ (A B : Obj) → Category.Obj Agda'
-  Hom =
-    Hom′ zero (suc zero) _≡_ (λ {m} {A} → ≡-IsEquivalence {m} {A}) cong cong₂ {ℂ}
+  -- Hom : ∀ (A B : Obj) → Category.Obj Agda'
+  -- Hom =
+  --   Hom′ zero (suc zero) _≡_ (λ {m} {A} → ≡-IsEquivalence {m} {A}) cong cong₂ {ℂ}
+
+  -- Hom-Initial : 
 
   Hom×𝟘 : ∀ {A X : Obj} →
     CategoryProperties._≅_ Agda' (Hom A X ×₀ Hom A 𝟘) (Hom A 𝟘)
   Hom×𝟘 =
-    (λ x → proj₂ x) , (λ x → {!!} , x) , (λ x → lift {!!}) , (λ x → lift {!!})
+    (λ x → proj₂ x) , (λ x → (Hom-Initial 𝟘-initial ∘[Hom] x) , x) ,
+    (λ p →
+      let x , y = p
+      in
+      lift {!!}) ,
+    (λ x → lift {!!})
 
   -- ×𝟘≅𝟘 : ∀ {A} → (A × 𝟘) ≅ 𝟘
   -- ×𝟘≅𝟘 {A} =

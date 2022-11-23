@@ -88,19 +88,6 @@ Agda = record
   ; ∘-assoc = λ x → lift eqv-refl
   }
 
-Hom : ∀ {ℂ : Category e (suc ℓ) e} →
-  (A : Category.Obj ℂ) → (B : Category.Obj ℂ) →
-  Category.Obj Agda
-Hom {ℂ} A B = A ⇒[ ℂ ] B
-
-Hom-Initial : {ℂ : Category e (suc ℓ) e} →
-  {𝟘 : Category.Obj ℂ} → CategoryProperties.IsInitial ℂ 𝟘 →
-  ∀ {A} →
-  (Hom {ℂ} 𝟘 A)
-Hom-Initial {ℂ} 𝟘-initial {A} = CategoryProperties.𝟘-map ℂ 𝟘-initial
-
--- _∘[Hom]_ : 
-
 
 -- Hom-Initial : {ℂ : Category e (suc ℓ) e} →
 --   {𝟘 : Category.Obj ℂ} → CategoryProperties.IsInitial ℂ 𝟘 →
@@ -178,3 +165,4 @@ Agda-nondegen = λ z → lower (proj₁ z (lift tt)) -- lift (λ x → lower (pr
 --     z = ⊤-IsSeparator (λ x₁ x₂ → {!!}) A
 --   in
 --   {!!}
+
