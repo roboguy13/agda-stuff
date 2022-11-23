@@ -148,10 +148,73 @@ Hom-× :
   Hom X (A ⊗ B)
 Hom-× _⊗_ product (f , g) = joined-bimap _⊗_ product f g
 
+-- Hom-Fn : ∀ {𝟙} → IsTerminal 𝟙 →
+--   (_⊗_ : Obj → Obj → Obj) →
+--   (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+--   (_⟶_ : Obj → Obj → Obj) →
+--   (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+--   (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+--   ∀ {A B} →
+--   Hom A B →
+--   Hom 𝟙 (A ⟶ B)
+-- Hom-Fn 𝟙-terminal _⊗_ product _⟶_ ev exp {A} {B} H with exp A B (A ⟶ B) (ev A B)
+-- ... | fst , fst₁ , snd = {!!}
+
+Hom-Ev : ∀ {A B A′ B′} →
+  ((Hom A B → Hom A′ B′) × Hom A B)
+    →
+  Hom A′ B′
+Hom-Ev (f , x) = f x
+
+-- to-profunctor : ∀ {A B} →
+--   A ⇒ B →
+--   A ⇒[ (Op ℂ ×cat ℂ) ] B
+-- to-profunctor = ?
+
+Hom-Exp-1 :
+  (_⊗_ : Obj → Obj → Obj) →
+  (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+  (_⟶_ : Obj → Obj → Obj) →
+  (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+  (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+  ∀ {A B X} →
+  Hom X (A ⟶ B) →
+  (Hom X A → Hom X B)
+Hom-Exp-1 _⊗_ product _⟶_ ev exp {A} {B} {X} H-fn H =
+  let
+    -- p = Functor.fmap Hom-F {!!} {!!}
+    p : Hom X A → Hom X (A ⊗ X)
+    p z = Functor.fmap Hom-F {!!} {!!}
+  in
+  {!!}
+
+Curry :
+  (_⊗_ : Obj → Obj → Obj) →
+  (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+  (_⟶_ : Obj → Obj → Obj) →
+  (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+  (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+  ∀ {A B R} →
+  Hom (A ⊗ B) R ⇒[ Agda′ ] Hom A (B ⟶ R)
+Curry _⊗_ product _⟶_ ev exp {A} {B} {R} =
+  λ x → {!!}
+
+Curry-Iso :
+  (_⊗_ : Obj → Obj → Obj) →
+  (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+  (_⟶_ : Obj → Obj → Obj) →
+  (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+  (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+  ∀ {A B R} →
+  Hom (A ⊗ B) R ≅[ Agda′ ] Hom A (B ⟶ R)
+Curry-Iso _⊗_ product _⟶_ ev exp {A} {B} {R} with exp B R (B ⟶ R) (ev B R)
+... | fst , fst₁ , snd =
+  (λ x → {!!}) , (λ x → {!!}) , (lift {!!}) , (lift {!!})
+
 -- Hom-×-Iso :
 --   (_⊗_ : Obj → Obj → Obj) →
 --   (∀ A B → IsProduct A B (A ⊗ B)) →
 --   ∀ {X A B} →
 --   CategoryProperties._≅_ Agda′ (Hom X A × Hom X B) (Hom X (A ⊗ B))
 -- Hom-×-Iso _⊗_ product =
---   (λ x → Hom-× _⊗_ product x) , (λ x → {!!} , {!!}) , (λ x → lift {!!}) , λ x → lift {!!}
+--   (λ x → Hom-× _⊗_ product x) , (λ x → Functor.fmap ×cat-proj₁ {!!} {!!} , {!!}) , {!!} , {!!}

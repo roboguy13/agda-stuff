@@ -211,6 +211,18 @@ _×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; _≈_ = _�
     ; fmap-∘ = λ {A} {B} {C} {f} {g} → IsEquivalence.refl (Category.equiv 𝔻)
     }
 
+Iso′ : ∀ {o ℓ e} (ℂ : Category o ℓ e) →
+  (A B : Category.Obj ℂ) →
+  Set (ℓ ⊔ e)
+Iso′ {_} {_} {_} ℂ A B =
+  Σ (A ⇒[ ℂ ] B) λ f →
+  Σ (B ⇒[ ℂ ] A) λ g →
+      ((f ∘[ ℂ ] g) ≈[ ℂ ] Category.id ℂ)
+        ×
+      ((g ∘[ ℂ ] f) ≈[ ℂ ] Category.id ℂ)
+
+
+syntax Iso′ ℂ A B = A ≅[ ℂ ] B
 
 variable o : Level
 variable ℓ : Level
