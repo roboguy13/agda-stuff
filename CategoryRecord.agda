@@ -158,9 +158,38 @@ record Functor {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level}
         ≈[ Tgt ]
       (fmap (f ∘[ Src ] g))
 
+    fmap-cong : ∀ {A B} {f g : A ⇒[ Src ] B} →
+      f ≈[ Src ] g →
+      fmap f ≈[ Tgt ] fmap g
+
 actf = Functor.act
 
 syntax actf F x = F · x
+
+_F∘_ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ o₃ ℓ₃ e₃ : Level} {𝔸 : Category o₁ ℓ₁ e₁} {𝔹 : Category o₂ ℓ₂ e₂} {ℂ : Category o₃ ℓ₃ e₃} →
+  (F : Functor 𝔹 ℂ) →
+  (G : Functor 𝔸 𝔹) →
+  Functor 𝔸 ℂ
+_F∘_ {_} {_} {_} {_} {_} {_} {_} {_} {_} {𝔸} {𝔹} {ℂ} F G =
+  let record { act = act₁ ; fmap = fmap₁ ; fmap-id = fmap-id₁ ; fmap-∘ = fmap-∘₁ } = F
+      record { act = act ; fmap = fmap ; fmap-id = fmap-id ; fmap-∘ = fmap-∘ } = G
+  in
+  record
+    { act = λ x → F · (G · x)
+    ; fmap = λ x → Functor.fmap F (Functor.fmap G x)
+    ; fmap-id = λ {A} →
+              let
+                p : Functor.fmap F (Functor.fmap G {A} (Category.id 𝔸)) ≈[ ℂ ] Functor.fmap F (Category.id 𝔹)
+                p = Functor.fmap-cong F (Functor.fmap-id G)
+              in
+              IsEquivalence.trans (Category.equiv ℂ) p (Functor.fmap-id F)
+    ; fmap-∘ = λ {A} {B} {C} {f} {g} →
+             let
+               p = Functor.fmap-∘ G {_} {_} {_} {f} {g}
+             in
+             IsEquivalence.trans (Category.equiv ℂ) (Functor.fmap-∘ F) (Functor.fmap-cong F p)
+    ; fmap-cong = λ x → Functor.fmap-cong F (Functor.fmap-cong G x)
+    }
 
 record NatTrans {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁ ℓ₁ e₁} {Tgt : Category o₂ ℓ₂ e₂}
       (F G : Functor Src Tgt) : Set (lsuc (o₁ ⊔ ℓ₁ ⊔ e₁ ⊔ o₂ ⊔ ℓ₂ ⊔ e₂)) where
@@ -172,6 +201,17 @@ record NatTrans {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁
       (component ∘[ Tgt ] Functor.fmap F f)
         ≈[ Tgt ]
       (Functor.fmap G f ∘[ Tgt ] component)
+
+_NT∘_ : {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁ ℓ₁ e₁} {Tgt : Category o₂ ℓ₂ e₂}
+  {F G H : Functor Src Tgt} →
+  (α : NatTrans G H) →
+  (β : NatTrans F G) →
+  NatTrans F H
+_NT∘_ record { component = component-α ; natural = natural-α } record { component = component-β ; natural = natural-β } =
+  record
+    { component = λ {x} → {!!}
+    ; natural = {!!}
+    }
 
 _×cat_ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} →
   Category o₁ ℓ₁ e₁ → Category o₂ ℓ₂ e₂ → Category (o₁ ⊔ o₂) (ℓ₁ ⊔ ℓ₂) (e₁ ⊔ e₂)
@@ -200,6 +240,7 @@ _×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; _≈_ = _�
     ; fmap = λ (f , g) → f
     ; fmap-id = λ {A} → IsEquivalence.refl (Category.equiv ℂ)
     ; fmap-∘ = λ {A} {B} {C} {f} {g} → IsEquivalence.refl (Category.equiv ℂ)
+    ; fmap-cong = λ (x , y) → x
     }
 
 ×cat-proj₂ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} {ℂ : Category o₁ ℓ₁ e₁} {𝔻 : Category o₂ ℓ₂ e₂} → Functor (ℂ ×cat 𝔻) 𝔻
@@ -209,6 +250,23 @@ _×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; _≈_ = _�
     ; fmap = λ (f , g) → g
     ; fmap-id = λ {A} → IsEquivalence.refl (Category.equiv 𝔻)
     ; fmap-∘ = λ {A} {B} {C} {f} {g} → IsEquivalence.refl (Category.equiv 𝔻)
+    ; fmap-cong = λ (x , y) → y
+    }
+
+[_,,_] : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} (ℂ : Category o₁ ℓ₁ e₁) (𝔻 : Category o₂ ℓ₂ e₂) →
+  Category {!!} {!!} {!!}
+[ ℂ ,, 𝔻 ] =
+  record
+    { Obj = Functor ℂ 𝔻
+    ; _⇒_ = λ F G → NatTrans F G
+    ; _∘_ = λ {F} {G} {H} x x₁ → {!!}
+    ; _≈_ = {!!}
+    ; equiv = {!!}
+    ; ∘-resp-≈ = {!!}
+    ; id = {!!}
+    ; left-id = {!!}
+    ; right-id = {!!}
+    ; ∘-assoc = {!!}
     }
 
 Iso′ : ∀ {o ℓ e} (ℂ : Category o ℓ e) →
@@ -223,6 +281,8 @@ Iso′ {_} {_} {_} ℂ A B =
 
 
 syntax Iso′ ℂ A B = A ≅[ ℂ ] B
+
+
 
 variable o : Level
 variable ℓ : Level
