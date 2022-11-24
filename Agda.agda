@@ -22,6 +22,7 @@ open import Algebra.Definitions
 -- Congruent {A} _R_ = (f : A -> A)(x y : A) -> x R y -> f x R f y
 
 module Agda
+  (o : Level)
   (ℓ : Level)
   (e : Level)
   where
@@ -45,9 +46,9 @@ module Agda
 -- _Agda-≈_ : ∀ {A B : Set} → (f g : Lift (lsuc ℓ) (A → B)) → Set (lsuc ℓ)
 -- _Agda-≈_ = λ f g → (∀ x → Lift (lsuc ℓ) (lower f x ≈ lower g x))
 
-Agda : Category (suc (suc ℓ)) (suc ℓ) (suc ℓ ⊔ e)
+Agda : Category (suc o) o (o ⊔ e)
 Agda = record
-  { Obj = Set (lsuc ℓ)
+  { Obj = Set o
   ; _⇒_ = λ A B → (A → B)
   ; _∘_ = λ f g → λ z → f (g z)
   -- -- ; _≈_ = λ f g → (∀ x → Lift (lsuc ℓ) (lift (lower f x) ≈ lift (lower g x)))
@@ -102,17 +103,17 @@ postulate fun-ext : ∀ {m n} → Extensionality m n
 case_of_ : ∀ {a b} {A : Set a} {B : Set b} → A → (A → B) → B
 case x of f = f x
 
-⊤-lift-canon : ∀ {A : Set (suc ℓ)} → (x : A → Lift (suc ℓ) ⊤) → x ≡ λ _ → lift tt
+⊤-lift-canon : ∀ {A : Set o} → (x : A → Lift o ⊤) → x ≡ λ _ → lift tt
 ⊤-lift-canon f = fun-ext λ x → refl
 -- ⊤-lift-canon (lift tt) = refl
 
-⊤-IsTerminal : IsTerminal (Lift (lsuc ℓ) ⊤)
+⊤-IsTerminal : IsTerminal (Lift o ⊤)
 ⊤-IsTerminal = λ A → (λ _ → lift tt) , (lift tt , (λ n x → lift (⊤-lift-canon {A} n)))
 
-⊥-IsInitial : IsInitial (Lift (lsuc ℓ) ⊥)
+⊥-IsInitial : IsInitial (Lift o ⊥)
 ⊥-IsInitial = λ B → (λ x → ⊥-elim (lower x)) , lift tt , λ n x → lift (fun-ext λ x₁ → ⊥-elim (lower x₁))
 
-⊤-IsSeparator : IsSeparator (Lift (lsuc ℓ) ⊤)
+⊤-IsSeparator : IsSeparator (Lift o ⊤)
 ⊤-IsSeparator {A} {B} {f₁} {f₂} = λ g → lift (fun-ext (λ x →
   let
     z a = lower (g (λ _ → a))
@@ -132,8 +133,8 @@ nondegen = λ z → lower (proj₁ z (lift tt)) -- lift λ z → lower (proj₁ 
 -- ×-canon : ∀  {A B : Set (suc ℓ)} {a×b : A × B} → a×b ≈ₒ (proj₁ a×b , proj₂ a×b)
 -- ×-canon {_} {_} {_} {fst , snd} = IsEquivalence.refl ≈ₒ-equiv
 
-×-IsProduct : ∀ {A B} → IsProduct A B (A × B)
-×-IsProduct {A} {B} =
+×-IsProduct : ∀ A B → IsProduct A B (A × B)
+×-IsProduct A B =
   proj₁ , proj₂ , λ f g → (λ x → f x , g x) , (lift (lift refl) ,
     lift refl) , λ n (s , t) →
       lift (cong₂ (λ f g x → f x , g x) (sym (lower (lower s))) (sym (lower t)))
@@ -142,14 +143,14 @@ nondegen = λ z → lower (proj₁ z (lift tt)) -- lift λ z → lower (proj₁ 
 ⊎-match (inj₁ x) f g = f x
 ⊎-match (inj₂ y) f g = g y
 
-⊎-canon : ∀ {A B : Set (lsuc ℓ)} (X : Set (lsuc ℓ)) (a+b : A ⊎ B) {f : A → X} {g : B → X} {h : A ⊎ B → X} →
+⊎-canon : ∀ {A B : Set o} (X : Set o) (a+b : A ⊎ B) {f : A → X} {g : B → X} {h : A ⊎ B → X} →
   (∀ a → f a ≡ h (inj₁ a)) →
   (∀ b → g b ≡ h (inj₂ b)) →
   h a+b ≡ ⊎-match a+b f g
 ⊎-canon _ (inj₁ x) prf-1 prf-2 = sym (prf-1 x)
 ⊎-canon _ (inj₂ y) prf-1 prf-2 = sym (prf-2 y)
 
-⊎-canon-ext : ∀ {A B : Set (lsuc ℓ)} (X : Set (lsuc ℓ)) {f : A → X} {g : B → X} {h : A ⊎ B → X} →
+⊎-canon-ext : ∀ {A B : Set o} (X : Set o) {f : A → X} {g : B → X} {h : A ⊎ B → X} →
   (f ≡ λ a → h (inj₁ a)) →
   (g ≡ λ b → h (inj₂ b)) →
   h ≡ λ x → ⊎-match x f g
@@ -160,10 +161,10 @@ nondegen = λ z → lower (proj₁ z (lift tt)) -- lift λ z → lower (proj₁ 
   inj₁ , inj₂ , λ {X} f g → (λ x → ⊎-match x (f) (g)) , (lift (lift refl) , lift refl) ,
     λ n (p , q) → lift (⊎-canon-ext X (lower (lower p)) (lower q))
 
-→true : Lift (lsuc ℓ) ⊤ ⇒ Lift (lsuc ℓ) Bool
+→true : Lift o ⊤ ⇒ Lift o Bool
 →true = λ tt → lift true
 
-→false : Lift (lsuc ℓ) ⊤ ⇒ Lift (lsuc ℓ) Bool
+→false : Lift o ⊤ ⇒ Lift o Bool
 →false = λ tt → lift false
 
 Agda-nondegen : Nondegenerate ⊤-IsTerminal ⊥-IsInitial

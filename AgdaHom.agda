@@ -181,7 +181,8 @@ Hom-Ev (f , x) = f x
 --   ∀ {A B} →
 --   actf よ (A ⟶ B) →
 --   (actf よ A → actf よ B)
--- よ-Exp-1 = {!!}
+-- よ-Exp-1 _⊗_ product _⟶_ ev exp {A} {B} H-fn H =
+--   Functor.fmap よ {!ev!} {!!}
 
 -- Hom-Exp-1 :
 --   (_⊗_ : Obj → Obj → Obj) →
@@ -208,8 +209,8 @@ Curry :
   (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
   ∀ {A B R} →
   Hom (A ⊗ B) R ⇒[ Agda′ ] Hom A (B ⟶ R)
-Curry _⊗_ product _⟶_ ev exp {A} {B} {R} =
-  λ x → {!!}
+Curry _⊗_ product _⟶_ ev exp {A} {B} {R} with exp B R {!!} {!!}
+... | fst , fst₁ , snd = λ x → fst ∘ {!!}
 
 Curry-Iso :
   (_⊗_ : Obj → Obj → Obj) →
