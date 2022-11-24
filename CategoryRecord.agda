@@ -13,134 +13,10 @@ open import Relation.Binary.PropositionalEquality hiding (refl; trans; sym)
 
 open import Level
 
+open import Category
+
 module CategoryRecord
   where
-
-record Category (o ℓ e : Level) : Set (lsuc (o ⊔ ℓ ⊔ e)) where
-  infixr 9 _∘_
-  field
-    Obj : Set o
-    _⇒_ : Obj → Obj → Set ℓ
-    _∘_ : ∀ {A B C} → (B ⇒ C) → (A ⇒ B) → (A ⇒ C)
-    _≈_ : ∀ {A B} → (f g : A ⇒ B) → Set e
-    equiv : ∀ {A B} → IsEquivalence (λ x y → (_≈_ {A} {B} x y))
-    ∘-resp-≈ : ∀ {A B C} → {f h : B ⇒ C} {g i : A ⇒ B} →
-                    (f ≈ h) → (g ≈ i) → ((f ∘ g) ≈ (h ∘ i))
-
-    id : ∀ {A} → (A ⇒ A)
-    left-id : ∀ {A B} → ∀ {f : A ⇒ B} → (id ∘ f) ≈ f
-    right-id : ∀ {A B} → ∀ {f : A ⇒ B} → (f ∘ id) ≈ f
-    ∘-assoc : ∀ {A B C D} → ∀ {f : C ⇒ D} {g : B ⇒ C} {h : A ⇒ B} →
-                    ((f ∘ g) ∘ h) ≈ (f ∘ (g ∘ h))
-
-≡-IsEquivalence : ∀ {m} {A : Set m} → IsEquivalence {_} {m} {A} _≡_
-≡-IsEquivalence = record { refl = _≡_.refl ; sym = Relation.Binary.PropositionalEquality.sym ; trans = Relation.Binary.PropositionalEquality.trans }
-
-record Eq-Category (o ℓ : Level) : Set (suc (o ⊔ ℓ)) where
-  field
-    Obj : Set o
-    _⇒_ : Obj → Obj → Set ℓ
-    _∘_ : ∀ {A B C} → (B ⇒ C) → (A ⇒ B) → (A ⇒ C)
-
-    id : ∀ {A} → (A ⇒ A)
-    left-id : ∀ {A B} → ∀ {f : A ⇒ B} → (id ∘ f) ≡ f
-    right-id : ∀ {A B} → ∀ {f : A ⇒ B} → (f ∘ id) ≡ f
-    ∘-assoc : ∀ {A B C D} → ∀ {f : C ⇒ D} {g : B ⇒ C} {h : A ⇒ B} →
-                    ((f ∘ g) ∘ h) ≡ (f ∘ (g ∘ h))
-
-Cat : ∀ {o ℓ} → Eq-Category o ℓ → Category o ℓ ℓ
-Cat record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
-  record
-    { Obj = Obj
-    ; _⇒_ = _⇒_
-    ; _∘_ = _∘_
-    ; _≈_ = _≡_
-    ; equiv = ≡-IsEquivalence
-    ; ∘-resp-≈ = λ {_} {_} {_} {f} {h} {g} {i} prf-1 prf-2 →
-        subst (λ z → (f ∘ z) ≡ (h ∘ i)) (Relation.Binary.PropositionalEquality.sym prf-2)
-          (subst (λ z → (z ∘ i) ≡ (h ∘ i)) (Relation.Binary.PropositionalEquality.sym prf-1) _≡_.refl)
-    ; id = id
-    ; left-id = left-id
-    ; right-id = right-id
-    ; ∘-assoc = ∘-assoc
-    }
-
--- Mk-Eq-Category : ∀ {o ℓ} →
---   (Obj : Set o) →
---   (_⇒_ : Obj → Obj → Set ℓ) →
---   (_∘_ : ∀ {A B C} → (B ⇒ C) → (A ⇒ B) → (A ⇒ C)) →
---   (id : ∀ {A} → (A ⇒ A)) →
---   (left-id : ∀ {A B} → ∀ (f : A ⇒ B) → (id ∘ f) ≡ f) →
---   (right-id : ∀ {A B} → ∀ {f : A ⇒ B} → (f ∘ id) ≡ f) →
---   (∘-assoc : ∀ {A B C D} → ∀ {f : C ⇒ D} {g : B ⇒ C} {h : A ⇒ B} →
---                     ((f ∘ g) ∘ h) ≡ (f ∘ (g ∘ h))) →
---   Category o ℓ ℓ
--- Mk-Eq-Category Obj _⇒_ _∘_ id left-id right-id ∘-assoc =
---   record
---     { Obj = Obj
---     ; _⇒_ = _⇒_
---     ; _∘_ = _∘_
---     ; _≈_ = _≡_
---     ; equiv = ≡-IsEquivalence
---     ; ∘-resp-≈ = λ {_} {_} {_} {f} {h} {g} {i} prf-1 prf-2 →
---         subst (λ z → (f ∘ z) ≡ (h ∘ i)) (sym prf-2)
---           (subst (λ z → (z ∘ i) ≡ (h ∘ i)) (sym prf-1) refl)
---     ; id = id
---     ; left-id = left-id
---     ; right-id = right-id
---     ; ∘-assoc = ∘-assoc
---     }
-
--- Eq-Category : 
-
-Arr : ∀ {o ℓ e} (ℂ : Category o ℓ e) → Category.Obj ℂ → Category.Obj ℂ → Set ℓ
-Arr = Category._⇒_
-
-Arr' : ∀ {o ℓ e} {ℂ : Category o ℓ e} → Category.Obj ℂ → Category.Obj ℂ → Set ℓ
-Arr' {_} {_} {_} {ℂ} = Category._⇒_ ℂ
-
-syntax Arr C x y = x ⇒[ C ] y
-syntax Arr' x y = x ⇒' y
-
-comp : ∀ {o ℓ e} (ℂ : Category o ℓ e) → ∀ {A B C} → (B ⇒[ ℂ ] C) → (A ⇒[ ℂ ] B) → (A ⇒[ ℂ ] C)
-comp = Category._∘_
-
-comp' : ∀ {o ℓ e} {ℂ : Category o ℓ e} → ∀ {A B C} → (B ⇒[ ℂ ] C) → (A ⇒[ ℂ ] B) → (A ⇒[ ℂ ] C)
-comp' {_} {_} {_} {ℂ} = Category._∘_ ℂ
-
-syntax comp ℂ f g = f ∘[ ℂ ] g
-syntax comp' f g = f ∘' g
-
-Equiv : ∀ {o ℓ e} (ℂ : Category o ℓ e) → ∀ {A B} → (f g : A ⇒[ ℂ ] B) → Set e
-Equiv = Category._≈_
-
-Equiv' : ∀ {o ℓ e} {ℂ : Category o ℓ e} → ∀ {A B} → (f g : A ⇒[ ℂ ] B) → Set e
-Equiv' {_} {_} {_} {ℂ} = Category._≈_ ℂ
-
-syntax Equiv ℂ f g = f ≈[ ℂ ] g
-syntax Equiv' f g = f ≈' g
-
--- Cat-Congruence : ∀ {o ℓ e} → (ℂ : Category o ℓ e) → Set e
--- Cat-Congruence ℂ =
---   ∀ {A B : Category.Obj ℂ} → (f : A ⇒[ ℂ ] B) →
---                {x x′ : A} →
---                x ≈[ ℂ ] x′ →
---                f x ≈[ ℂ ] f x′
-
-Op : ∀ {o ℓ e} → Category o ℓ e → Category o ℓ e
-Op record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; _≈_ = _≈_ ; equiv = equiv ; ∘-resp-≈ = ∘-resp-≈ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
-  record
-    { Obj = Obj
-    ; _⇒_ = λ x y → y ⇒ x
-    ; _∘_ = λ f g → g ∘ f
-    ; _≈_ = _≈_
-    ; equiv = equiv
-    ; ∘-resp-≈ = λ z z₁ → ∘-resp-≈ z₁ z
-    ; id = id
-    ; left-id = λ {A} {B} {f} → right-id
-    ; right-id = λ {A} {B} {f} → left-id
-    ; ∘-assoc = IsEquivalence.sym equiv ∘-assoc
-    }
 
 record Functor {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level}
   (Src : Category o₁ ℓ₁ e₁) (Tgt : Category o₂ ℓ₂ e₂) : Set (lsuc (o₁ ⊔ ℓ₁ ⊔ e₁ ⊔ o₂ ⊔ ℓ₂ ⊔ e₂)) where
@@ -194,24 +70,92 @@ _F∘_ {_} {_} {_} {_} {_} {_} {_} {_} {_} {𝔸} {𝔹} {ℂ} F G =
 record NatTrans {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁ ℓ₁ e₁} {Tgt : Category o₂ ℓ₂ e₂}
       (F G : Functor Src Tgt) : Set (lsuc (o₁ ⊔ ℓ₁ ⊔ e₁ ⊔ o₂ ⊔ ℓ₂ ⊔ e₂)) where
   field
-    component : ∀ {x : Category.Obj Src} →
+    component : ∀ (x : Category.Obj Src) →
       (F · x) ⇒[ Tgt ] (G · x)
 
-    natural : ∀ {x y} {f : x ⇒[ Src ] y} →
-      (component ∘[ Tgt ] Functor.fmap F f)
+    natural : ∀ {x y} (f : x ⇒[ Src ] y) →
+      (component y ∘[ Tgt ] Functor.fmap F f)
         ≈[ Tgt ]
-      (Functor.fmap G f ∘[ Tgt ] component)
+      (Functor.fmap G f ∘[ Tgt ] component x)
 
 _NT∘_ : {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁ ℓ₁ e₁} {Tgt : Category o₂ ℓ₂ e₂}
   {F G H : Functor Src Tgt} →
   (α : NatTrans G H) →
   (β : NatTrans F G) →
   NatTrans F H
-_NT∘_ record { component = component-α ; natural = natural-α } record { component = component-β ; natural = natural-β } =
+_NT∘_ {_} {_} {_} {_} {_} {_} {Src} {Tgt} {F} {G} {H} α β =
+  let
+    record { component = component-α ; natural = natural-α } = α
+    record { component = component-β ; natural = natural-β } = β
+  in
   record
-    { component = λ {x} → {!!}
-    ; natural = {!!}
+    { component = λ x → component-α x ∘[ Tgt ] component-β x
+    ; natural = λ {x} {y} f →
+              let
+                α-x : actf G x ⇒ actf H x
+                α-x = component-α x
+
+                α-y : actf G y ⇒ actf H y
+                α-y = component-α y
+
+                β-x : actf F x ⇒ actf G x
+                β-x = component-β x
+
+                β-y : actf F y ⇒ actf G y
+                β-y = component-β y
+
+                x-∘ : actf F x ⇒ actf H x
+                x-∘ = α-x ∘ β-x
+
+                y-∘ : actf F y ⇒ actf H y
+                y-∘ = α-y ∘ β-y
+
+                n1 : (α-y ∘ Functor.fmap G f) ≈ (Functor.fmap H f ∘ α-x)
+                n1 = NatTrans.natural α f
+
+                n2 : (β-y ∘ Functor.fmap F f) ≈ (Functor.fmap G f ∘ β-x)
+                n2 = NatTrans.natural β f
+
+                m1 : ∀ z → (component-α z ∘ Functor.fmap G (Category.id Src)) ≈ (Functor.fmap H (Category.id Src) ∘ component-α z)
+                m1 _ = NatTrans.natural α (Category.id Src)
+
+                prf0 : ((α-y ∘ β-y) ∘ Functor.fmap F f) ≈ (α-y ∘ (β-y ∘ Functor.fmap F f))
+                prf0 = ∘-assoc
+
+                prf1 : ((α-y ∘ β-y) ∘ Functor.fmap F f) ≈ (α-y ∘ (Functor.fmap G f ∘ β-x))
+                prf1 = trans prf0 (rewrite-right-∘ (sym n2) refl)
+
+                prf2 : (α-y ∘ (Functor.fmap G f ∘ β-x)) ≈ ((α-y ∘ Functor.fmap G f) ∘ β-x)
+                prf2 = sym ∘-assoc
+
+                prf3 : ((α-y ∘ Functor.fmap G f) ∘ β-x) ≈ ((Functor.fmap H f ∘ α-x) ∘ β-x)
+                prf3 = rewrite-left-∘ (sym n1) refl
+
+                prf4 : ((Functor.fmap H f ∘ α-x) ∘ β-x) ≈ (Functor.fmap H f ∘ (α-x ∘ β-x))
+                prf4 = ∘-assoc
+
+                prf : ((α-y ∘ β-y) ∘ Functor.fmap F f) ≈ (Functor.fmap H f ∘ (α-x ∘ β-x))
+                prf = trans prf1 (trans prf2 (trans prf3 prf4))
+              in
+              prf
     }
+  where
+  open Category.Category Tgt
+  open CatBasics Tgt
+
+
+-- (((NatTrans.component α y) ∘[ Tgt ] (NatTrans.component β y))
+--    ∘[ Tgt ]
+--  (Functor.fmap F f))
+--   ≈
+-- ((Functor.fmap H f)
+--    ∘[ Tgt ]
+--  ((NatTrans.component α x) ∘[ Tgt ] (NatTrans.component β x)))
+
+
+
+              -- IsEquivalence.trans (Category.equiv Tgt) {!!} {!!}
+    -- }
 
 _×cat_ : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} →
   Category o₁ ℓ₁ e₁ → Category o₂ ℓ₂ e₂ → Category (o₁ ⊔ o₂) (ℓ₁ ⊔ ℓ₂) (e₁ ⊔ e₂)
@@ -292,127 +236,9 @@ module CategoryProperties
   (ℂ : Category o ℓ e)
   where
 
+  open Category.Category ℂ
+  open CatBasics ℂ
 
-  open Category ℂ
-
-  sym : ∀ {A B : Obj} {f g : A ⇒ B} → f ≈ g → g ≈ f
-  sym {A} {B} = IsEquivalence.sym (equiv {A} {B})
-
-  trans : ∀ {A B : Obj} {f g h : A ⇒ B} →
-    f ≈ g →
-    g ≈ h →
-    f ≈ h
-  trans {A} {B} = IsEquivalence.trans (equiv {A} {B})
-
-  refl : ∀ {A B : Obj} {f : A ⇒ B} → f ≈ f
-
-  refl {A} {B} {f} = IsEquivalence.refl (equiv {A} {B})
-
-  postcomp-≈ : ∀ {A B C : Obj}
-    {f g : B ⇒ C} →
-    {h : A ⇒ B} →
-    f ≈ g →
-    (f ∘ h) ≈ (g ∘ h)
-  postcomp-≈ {_} {_} {_} {ℂ} prf =
-    ∘-resp-≈ prf refl
-
-  precomp-≈ : ∀ {A B C : Obj}
-    {f g : A ⇒ B} →
-    {h : B ⇒ C} →
-    f ≈ g →
-    (h ∘ f) ≈ (h ∘ g)
-  precomp-≈ {_} {_} {_} {ℂ} prf =
-    ∘-resp-≈ refl prf
-
-  ≈left-id-intro : ∀ {A B : Obj} →
-    {f g : A ⇒ B} →
-    {h : B ⇒ B} →
-    h ≈ id →
-    f ≈ g →
-    (h ∘ f) ≈ g
-  ≈left-id-intro prf1 prf2 = trans (∘-resp-≈ prf1 prf2) left-id
-
-  ≈left-id-elim : ∀ {A B : Obj} →
-    {f g : A ⇒ B} →
-    {h : B ⇒ B} →
-    h ≈ id →
-    (h ∘ f) ≈ g →
-    f ≈ g
-  ≈left-id-elim prf1 prf2 = trans (sym left-id) (trans (∘-resp-≈ (sym prf1) refl) prf2)
-
-  ≈right-id-elim : ∀ {A B : Obj} →
-    {f g : A ⇒ B} →
-    {h : A ⇒ A} →
-    h ≈ id →
-    (f ∘ h) ≈ g →
-    f ≈ g
-  ≈right-id-elim prf1 prf2 = trans (sym right-id) (trans (∘-resp-≈ refl (sym prf1)) prf2)
-
-  rewrite-right-∘ : ∀ {A B C : Obj}
-    {f : B ⇒ C}
-    {g g′ : A ⇒ B}
-    {h : A ⇒ C} →
-    g ≈ g′ →
-    (f ∘ g) ≈ h →
-    (f ∘ g′) ≈ h
-  rewrite-right-∘ prf1 prf2 = trans (∘-resp-≈ refl (sym prf1)) prf2
-
-  rewrite-left-∘ : ∀ {A B C : Obj}
-    {f : A ⇒ B}
-    {g g′ : B ⇒ C}
-    {h : A ⇒ C} →
-    g ≈ g′ →
-    (g ∘ f) ≈ h →
-    (g′ ∘ f) ≈ h
-  rewrite-left-∘ prf1 prf2 = trans (∘-resp-≈ (sym prf1) refl) prf2
-
-
-  ∘-assoc4 : ∀ {A B C D E : Obj}
-    {f : A ⇒ B}
-    {g : B ⇒ C}
-    {h : C ⇒ D}
-    {i : D ⇒ E} →
-    ((i ∘ h) ∘ (g ∘ f)) ≈ (i ∘ (h ∘ (g ∘ f)))
-  ∘-assoc4 {_} {_} {_} {_} {_} {f} {g} {h} {i} =
-    let
-      p : ((i ∘ h) ∘ (g ∘ f)) ≈ ((i ∘ h) ∘ (id ∘ (g ∘ f)))
-      p = ∘-resp-≈ refl (sym left-id)
-
-      q : ((i ∘ h) ∘ (id ∘ (g ∘ f))) ≈ (i ∘ (h ∘ (id ∘ (g ∘ f))))
-      q = ∘-assoc
-
-      w : (i ∘ (h ∘ (id ∘ (g ∘ f)))) ≈ (i ∘ (h ∘ (g ∘ f)))
-      w = ∘-resp-≈ refl (∘-resp-≈ refl left-id)
-    in
-    trans p (trans q w)
-
-  ∘-assoc4-mid : ∀ {A B C D E : Obj}
-    {f : A ⇒ B}
-    {g : B ⇒ C}
-    {h : C ⇒ D}
-    {i : D ⇒ E} →
-    (i ∘ (h ∘ g) ∘ f) ≈ ((i ∘ h) ∘ (g ∘ f))
-  ∘-assoc4-mid {_} {_} {_} {_} {_} {f} {g} {h} {i} =
-    trans (∘-resp-≈ refl (Category.∘-assoc ℂ)) (sym ∘-assoc4)
-
-  ∘-assoc5-mid : ∀ {A B C D E U : Obj}
-    {f : A ⇒ B}
-    {g : B ⇒ C}
-    {h : C ⇒ D}
-    {i : D ⇒ E} →
-    {j : E ⇒ U} →
-    (j ∘ (i ∘ h ∘ g) ∘ f) ≈ ((j ∘ i) ∘ h ∘ (g ∘ f))
-  ∘-assoc5-mid {_} {_} {_} {_} {_} {_} {f} {g} {h} {i} {j} =
-    let
-      p : (j ∘ ((i ∘ h) ∘ g) ∘ f) ≈ ((j ∘ i) ∘ h ∘ (g ∘ f))
-      p = trans
-            (∘-resp-≈ refl (Category.∘-assoc ℂ))
-            (rewrite-left-∘ refl ∘-assoc4-mid)
-
-      q : (j ∘ (i ∘ h ∘ g) ∘ f) ≈ (j ∘ ((i ∘ h) ∘ g) ∘ f)
-      q = (rewrite-right-∘ (rewrite-left-∘ (sym ∘-assoc) refl) refl)
-    in
-    trans q p
 
   Σ![_⇒_] : ∀ {m : Level} → ∀ A B → (k : (A ⇒ B) → Set m) → Set (ℓ ⊔ m ⊔ e)
   Σ![ A ⇒ B ] P =
