@@ -18,6 +18,9 @@ open import Category
 module CategoryRecord
   where
 
+case_of_ : ∀ {a b} {A : Set a} {B : Set b} → A → (A → B) → B
+case x of f = f x
+
 record Functor {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level}
   (Src : Category o₁ ℓ₁ e₁) (Tgt : Category o₂ ℓ₂ e₂) : Set (lsuc (o₁ ⊔ ℓ₁ ⊔ e₁ ⊔ o₂ ⊔ ℓ₂ ⊔ e₂)) where
   field
@@ -78,12 +81,12 @@ record NatTrans {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁
         ≈[ Tgt ]
       (Functor.fmap G f ∘[ Tgt ] component x)
 
-_NT∘_ : {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁ ℓ₁ e₁} {Tgt : Category o₂ ℓ₂ e₂}
+_∘NT_ : {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂ : Level} {Src : Category o₁ ℓ₁ e₁} {Tgt : Category o₂ ℓ₂ e₂}
   {F G H : Functor Src Tgt} →
   (α : NatTrans G H) →
   (β : NatTrans F G) →
   NatTrans F H
-_NT∘_ {_} {_} {_} {_} {_} {_} {Src} {Tgt} {F} {G} {H} α β =
+_∘NT_ {_} {_} {_} {_} {_} {_} {Src} {Tgt} {F} {G} {H} α β =
   let
     record { component = component-α ; natural = natural-α } = α
     record { component = component-β ; natural = natural-β } = β
@@ -198,20 +201,29 @@ _×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; _≈_ = _�
     }
 
 [_,,_] : ∀ {o₁ ℓ₁ e₁ o₂ ℓ₂ e₂} (ℂ : Category o₁ ℓ₁ e₁) (𝔻 : Category o₂ ℓ₂ e₂) →
-  Category {!!} {!!} {!!}
+  Category (suc o₁ ⊔ suc ℓ₁ ⊔ suc e₁ ⊔ suc o₂ ⊔ suc ℓ₂ ⊔ suc e₂) (suc o₁ ⊔ suc ℓ₁ ⊔ suc e₁ ⊔ suc o₂ ⊔ suc ℓ₂ ⊔ suc e₂) (o₁ ⊔ e₂)
 [ ℂ ,, 𝔻 ] =
   record
     { Obj = Functor ℂ 𝔻
     ; _⇒_ = λ F G → NatTrans F G
-    ; _∘_ = λ {F} {G} {H} x x₁ → {!!}
-    ; _≈_ = {!!}
-    ; equiv = {!!}
-    ; ∘-resp-≈ = {!!}
-    ; id = {!!}
-    ; left-id = {!!}
-    ; right-id = {!!}
-    ; ∘-assoc = {!!}
+    ; _∘_ = λ {F} {G} {H} α β → α ∘NT β
+    ; _≈_ = λ α β →
+      ∀ x → NatTrans.component α x ≈ NatTrans.component β x
+    ; equiv =
+            record
+            { refl = λ x → refl
+            ; sym = λ f x → sym (f x)
+            ; trans = λ f g x → trans (f x) (g x)
+            }
+    ; ∘-resp-≈ = λ f g x → ∘-resp-≈ (f x) (g x)
+    ; id = record { component = λ x → Category.id 𝔻 ; natural = λ f → trans left-id (sym right-id) }
+    ; left-id = λ x → left-id
+    ; right-id = λ x → right-id
+    ; ∘-assoc = λ x → ∘-assoc
     }
+    where
+    open Category.Category 𝔻
+    open CatBasics 𝔻
 
 Iso′ : ∀ {o ℓ e} (ℂ : Category o ℓ e) →
   (A B : Category.Obj ℂ) →

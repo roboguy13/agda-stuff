@@ -185,6 +185,10 @@ module CatBasics
     (g′ ∘ f) ≈ h
   rewrite-left-∘ prf1 prf2 = trans (∘-resp-≈ (sym prf1) refl) prf2
 
+  ∘-resp-≡ : ∀ {A B C} → {f h : B ⇒ C} {g i : A ⇒ B} →
+                  (f ≡ h) → (g ≡ i) → ((f ∘ g) ≡ (h ∘ i))
+  ∘-resp-≡ _≡_.refl _≡_.refl = _≡_.refl
+
   -- rewrite-left : ∀ {A B C : Obj}
   --   {f : A ⇒ B}
   --   {g : B ⇒ C}
