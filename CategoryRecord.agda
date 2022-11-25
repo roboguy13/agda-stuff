@@ -81,11 +81,11 @@ actf = Functor.act
 
 syntax actf F x = F · x
 
-_F∘_ : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {𝔸 : Category o₁ ℓ₁} {𝔹 : Category o₂ ℓ₂} {ℂ : Category o₃ ℓ₃} →
+_∘F_ : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {𝔸 : Category o₁ ℓ₁} {𝔹 : Category o₂ ℓ₂} {ℂ : Category o₃ ℓ₃} →
   (F : Functor 𝔹 ℂ) →
   (G : Functor 𝔸 𝔹) →
   Functor 𝔸 ℂ
-_F∘_ {_} {_} {_} {_} {_} {_} {𝔸} {𝔹} {ℂ} F G =
+_∘F_ {_} {_} {_} {_} {_} {_} {𝔸} {𝔹} {ℂ} F G =
   let record { act = act₁ ; fmap′ = fmap₁ ; fmap-id′ = fmap-id₁ ; fmap-∘′ = fmap-∘₁ } = F
       record { act = act ; fmap′ = fmap ; fmap-id′ = fmap-id ; fmap-∘′ = fmap-∘ } = G
   in
@@ -105,6 +105,14 @@ _F∘_ {_} {_} {_} {_} {_} {_} {𝔸} {𝔹} {ℂ} F G =
              trans (Functor.fmap-∘ F) (cong (Functor.fmap F) p)
     }
 
+unfold-∘F : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} (A : Category o₁ ℓ₁) (B : Category o₂ ℓ₂) (C : Category o₃ ℓ₃) →
+  (F : Functor B C) →
+  (G : Functor A B) →
+  ∀ {X Y} {f : X ⇒[ A ] Y} →
+  Functor.fmap (F ∘F G) f ≡ Functor.fmap F (Functor.fmap G f)
+unfold-∘F _ _ _ _ _ = refl
+
+
 record NatTrans {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂}
       (F G : Functor Src Tgt) : Set (lsuc (o₁ ⊔ ℓ₁ ⊔ o₂ ⊔ ℓ₂)) where
   field
@@ -123,6 +131,60 @@ NatTrans-η : ∀ {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁}
   α ≡ β
 NatTrans-η {_} {_} {_} {_} {_} {_} {_} {_} {α} {β} refl with fun-ext (λ x → fun-ext λ y → fun-ext λ f → uip (NatTrans.natural α x y f) (NatTrans.natural β x y f))
 ... | refl = refl
+
+-- Whisker left
+_∘WL_ : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {A : Category o₁ ℓ₁} {B : Category o₂ ℓ₂} {C : Category o₃ ℓ₃} →
+  {F G : Functor A B} →
+  (H : Functor B C) →
+  (α : NatTrans F G) →
+  NatTrans (H ∘F F) (H ∘F G)
+_∘WL_ {_} {_} {_} {_} {_} {_} {A} {B} {C} {F} {G} H α =
+  record
+    { component = λ x → Functor.fmap H (NatTrans.component α x)
+    ; natural = λ x y f →
+              let
+                p : ((Functor.fmap H (NatTrans.component α y)) ∘[ C ] (Functor.fmap (H ∘F F) f))
+                      ≡
+                    ((Functor.fmap H (NatTrans.component α y)) ∘[ C ] (Functor.fmap H (Functor.fmap F f)))
+                p = rewrite-right-∘ C (unfold-∘F A B C H F {x} {y} {f}) refl
+
+                q : ((Functor.fmap H (NatTrans.component α y)) ∘[ C ] (Functor.fmap H (Functor.fmap F f)))
+                      ≡
+                    ((Functor.fmap H (NatTrans.component α y ∘[ B ] Functor.fmap F f)))
+                q = Functor.fmap-∘ H
+
+                s : ((Functor.fmap H (NatTrans.component α y ∘[ B ] Functor.fmap F f)))
+                      ≡
+                    ((Functor.fmap H (Functor.fmap G f ∘[ B ] NatTrans.component α x)))
+                s = cong (λ z → Functor.fmap H z) (NatTrans.natural α x y f)
+
+                s2 : ((Functor.fmap H (Functor.fmap G f ∘[ B ] NatTrans.component α x)))
+                       ≡
+                     ((Functor.fmap H (Functor.fmap G f)) ∘[ C ] Functor.fmap H (NatTrans.component α x))
+                s2 = sym (Functor.fmap-∘ H)
+
+                s3 : ((Functor.fmap H (Functor.fmap G f)) ∘[ C ] Functor.fmap H (NatTrans.component α x))
+                       ≡
+                     ((Functor.fmap (H ∘F G) f ∘[ C ] Functor.fmap H (NatTrans.component α x)))
+                s3 = rewrite-left-∘ C (unfold-∘F A B C H G) refl
+              in
+              trans p (trans q (trans s (trans s2 s3)))
+    }
+  where
+    open CatBasics
+
+
+-- Whisker right
+_∘WR_ : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {A : Category o₁ ℓ₁} {B : Category o₂ ℓ₂} {C : Category o₃ ℓ₃} →
+  {F G : Functor B C} →
+  (α : NatTrans F G) →
+  (H : Functor A B) →
+  NatTrans (F ∘F H) (G ∘F H)
+_∘WR_ α H =
+  record
+    { component = λ x → NatTrans.component α (Functor.act H x)
+    ; natural = {!!}
+    }
 
 _∘NT_ : {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂}
   {F G H : Functor Src Tgt} →
@@ -406,12 +468,6 @@ module CategoryProperties
       q = z g tt
     in
     trans p (sym q)
-    -- let -- TODO: Why is this yellow?
-    --   p = 𝟙-map-unique {𝟙}  𝟙-terminal {A} {f}
-    --   -- q : g ≈ 𝟙-map 𝟙-terminal {A}
-    --   q = 𝟙-map-unique {𝟙} 𝟙-terminal {A} {g}
-    -- in
-    -- trans p (sym q)
 
   𝟘-maps-same : ∀ {𝟘} → (𝟘-initial : IsInitial 𝟘) →
     ∀ {A} →
@@ -694,95 +750,3 @@ module CategoryProperties
         ((u ∘ (s ∘ z)) ≡ (f ∘ q))
           ×
         ((u ∘ z) ≡ q)
-
-  -- 𝟘⇒-Monic : ∀ {𝟘 𝟙 : Obj} →
-  --   (𝟘-initial : IsInitial 𝟘) →
-  --   (𝟙-terminal : IsTerminal 𝟙) →
-  --   ∀ {A} →
-  --   (f : 𝟘 ⇒ A) →
-  --   Nondegenerate 𝟙-terminal 𝟘-initial →
-  --   Monic f
-  -- 𝟘⇒-Monic {𝟘} 𝟘-initial 𝟙-terminal {A} f nondegen X g₁ g₂ x =
-  --   {!!}
-
-  -- A⇒𝟘-is-𝟘 : ∀ {𝟘 : Obj} → (𝟘-initial : IsInitial 𝟘) →
-  --   ∀ {A : Obj} →
-  --   (A ⇒ 𝟘) →
-  --   A ≅ 𝟘
-  -- A⇒𝟘-is-𝟘 {𝟘} 𝟘-initial {A} A⇒𝟘 =
-  --   let
-  --     r , s , t = 𝟘-initial 𝟘
-
-
-  --     𝟘⇒A = 𝟘-map 𝟘-initial {A}
-  --     -- p = 𝟘⇒A ∘ A⇒𝟘
-  --     p = A⇒𝟘 ∘ 𝟘⇒A
-
-  --     t′ : (A⇒𝟘 ∘ 𝟘-map 𝟘-initial) ≡ proj₁ (𝟘-initial 𝟘)
-  --     t′ = t p (lift tt)
-
-  --     w : proj₁ (𝟘-initial 𝟘) ≡ id
-  --     w = sym (t id (lift tt))
-
-  --     q : p ≈ id
-  --     q = trans t′ w
-
-
-  --     p′ : A ⇒ A
-  --     p′ = 𝟘⇒A ∘ A⇒𝟘
-  --     p2 = A⇒𝟘 ∘ ((𝟘⇒A ∘ A⇒𝟘) ∘ 𝟘⇒A)
-
-  --     --     f
-  --     --   A -> 0
-  --     -- f |    | !
-  --     --   v    v
-  --     --   0 -> A
-  --     --     !
-
-  --     sq : CSquare 𝟘⇒A 𝟘⇒A A⇒𝟘 A⇒𝟘
-  --     sq = refl
-
-  --     -- 0
-  --     --  ↘
-  --     --   A -> 0
-  --     --   |    | !
-  --     --   v    v
-  --     --   0 -> A
-  --     --     !
-
-  --     r′ , s′ , t-A = 𝟘-initial A
-
-  --     -- t-A′ = t-A 𝟘⇒A (lift tt)
-
-  --     -- t′′ : (𝟘-map 𝟘-initial ∘ A⇒𝟘) ≈ id
-  --     -- t′′ = {!t-A!}
-
-  --     -- t′′ : 
-
-  --     q′ : p′ ≈ id
-  --     q′ = {!!}
-
-  --     w' : A ⇒ 𝟘
-  --     w' = (A⇒𝟘 ∘ 𝟘⇒A) ∘ A⇒𝟘
-
-  --     composite = (((A⇒𝟘 ∘ 𝟘⇒A) ∘ A⇒𝟘) ∘ ((𝟘⇒A ∘ A⇒𝟘) ∘ 𝟘⇒A))
-
-
-  --     eq' : (((A⇒𝟘 ∘ 𝟘⇒A) ∘ A⇒𝟘) ∘ ((𝟘⇒A ∘ A⇒𝟘) ∘ 𝟘⇒A)) ≈ id
-  --     eq' = trans (t composite (lift tt)) w
-
-  --     -- eq'' : (((𝟘⇒A ∘ A⇒𝟘) ∘ 𝟘⇒A) ∘ ((A⇒𝟘 ∘ 𝟘⇒A) ∘ A⇒𝟘)) ≈ id
-  --     -- eq'' = trans {!t′!} {!!}
-  --   in
-  --   (A⇒𝟘 ∘ 𝟘⇒A) ∘ A⇒𝟘 ,
-  --   (𝟘⇒A ∘ A⇒𝟘) ∘ 𝟘⇒A ,
-  --   {!!} ,
-  --   {!!}
-  --   -- A⇒𝟘 , 𝟘⇒A , q′ , q
-
-  -- 𝟘⇒𝟘-monic : ∀ {𝟘} → (𝟘-initial : IsInitial 𝟘) →
-  --   Monic (𝟘-map 𝟘-initial {𝟘})
-  -- 𝟘⇒𝟘-monic 𝟘-initial X g₁ g₂ x = {!!}
-
-
-  -- -- initial-monic :

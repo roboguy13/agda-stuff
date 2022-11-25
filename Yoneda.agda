@@ -12,46 +12,31 @@ open import Axiom.Extensionality.Propositional
 
 module Yoneda
   (o ℓ : Level)
-  (Eq-ℂ : Eq-Category o ℓ)
-  -- (≈-is-≡ : ∀ {A B} → Category. ℂ {A} {B} ≡ _≡_)
+  (ℂ : Category o ℓ)
   where
 
--- postulate fun-ext : ∀ {m n} → Extensionality m n
--- postulate fun-ext-gen : ∀ {m n} → Extensionality m n
+Agda' : Category (suc ℓ) ℓ
+Agda' = Agda
 
--- Agda' : Category ? ? ? --Category (suc (suc e)) (suc e) (suc e ⊔ ℓ)
--- Agda' = Agda e ℓ
--- Agda' : Category (suc (o ⊔ ℓ)) (o ⊔ ℓ) (o ⊔ ℓ)
--- Agda' = Agda (o ⊔ ℓ) ℓ ℓ
-Agda' : Category (suc ℓ) ℓ (ℓ ⊔ ℓ)
-Agda' = Agda ℓ ℓ ℓ
-
-ℂ : Category o ℓ ℓ
-ℂ = Cat Eq-ℂ
-
--- ℂop : Category lzero (lsuc lzero) (lsuc lzero)
-ℂop : Category o ℓ ℓ -- e (suc ℓ) (suc ℓ) --Category e (suc ℓ) (suc ℓ)
+ℂop : Category o ℓ
 ℂop = Op ℂ
 
 Rep : (A : Category.Obj ℂop) → Functor ℂop Agda'
 Rep A =
   record
   { act = λ X → (A ⇒[ ℂop ] X)
-  ; fmap = λ f → λ t → (f ∘[ ℂop ] t)
-  ; fmap-id = λ {_} → lift (fun-ext ℓ ℓ ℓ λ x → Category.right-id ℂ)
-  ; fmap-∘ = lift (fun-ext ℓ ℓ ℓ (λ x → Category.∘-assoc ℂ))
-  ; fmap-cong = λ x →
-              lift (IsEquivalence.trans ≡-IsEquivalence {!!} {!!})
+  ; fmap′ = λ _ _ f → λ t → (f ∘[ ℂop ] t)
+  ; fmap-id′ = λ _ → (fun-ext λ x → Category.right-id ℂ)
+  ; fmap-∘′ = λ _ _ _ _ _ → (fun-ext (λ x → Category.∘-assoc ℂ))
   }
 
 よ : Functor ℂ [ ℂop ,, Agda' ]
 よ =
   record
-    { act = λ x → {!!}
-    ; fmap = {!!}
-    ; fmap-id = {!!}
-    ; fmap-∘ = {!!}
-    ; fmap-cong = {!!}
+    { act = λ x → Rep x
+    ; fmap′ = λ A B f → {!!}
+    ; fmap-id′ = {!!}
+    ; fmap-∘′ = {!!}
     }
 
 -- よ : (A : Category.Obj ℂop) → Functor ℂop (Agda ℓ ℓ ℓ)
