@@ -124,6 +124,10 @@ open Category.Category ℂop
 open CategoryProperties
 open import Data.Product
 
+よ-× : ∀ (A B : Category.Obj ℂop) →
+  IsProduct [ ℂop ,, Agda' ] (actf よ A) (actf よ B) (actf よ A × actf よ B)
+よ-× = ?
+
 -- ×-canon-proj₁-eq : ∀ {A B X : Set (o ⊔ ℓ)} {f : X → A} {g : X → B} →
 --   f ≡ (proj₁ ∘[ Agda' ] (λ x → f x , g x))
 -- ×-canon-proj₁-eq = fun-ext ℓ ℓ ℓ λ x → _≡_.refl

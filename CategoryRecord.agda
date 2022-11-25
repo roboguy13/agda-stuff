@@ -406,7 +406,6 @@ module CategoryProperties
     (A×B) ⇒ B
   product-proj₂ (_ , q , _) = q
 
-
   IsCoproduct : ∀ A B A+B → Set (o ⊔ ℓ)
   IsCoproduct A B A+B =
     ∃[ i ] ∃[ j ] (∀ {X} (f : A ⇒ X) (g : B ⇒ X) →
@@ -766,6 +765,134 @@ module CategoryProperties
     Z ⇒ (A ⊗ B)
   joined-bimap _⊗_ product f g =
     bimap _⊗_ product f g ∘ diagonal _⊗_ product
+
+  bimap-id :
+    (_⊗_ : Obj → Obj → Obj) →
+    (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    ∀ {A B} →
+    bimap _⊗_ product {A} {A} {B} {B} id id ≡ id
+  -- bimap-id _⊗_ product {A} {B} with product A B in eq
+  -- ... | fst , fst₁ , snd with snd fst fst₁
+  -- bimap-id _⊗_ product {A} {B} | fst , fst₁ , snd | fst₂ , (u , v) , snd₁ =
+  bimap-id _⊗_ product {A} {B} =
+    let
+      fst , fst₁ , snd = product A B
+      fst₂ , (u , v) , snd₁ = snd fst fst₁
+      p : id ≡ fst₂
+      p = snd₁ id (sym right-id , sym right-id)
+
+      x , (y , z) , w = snd (product-proj₁ (product A B)) (product-proj₂ (product A B))
+
+      prf : product-proj₁ (product A B) ≡ fst
+      prf = refl
+
+      prf2 : product-proj₂ (product A B) ≡ fst₁
+      prf2 = refl
+
+      prf3′ : proj₁ (proj₂ (product A B)) ≡ fst₁
+      prf3′ = refl
+
+      prf3′′ : proj₂ (proj₂ (product A B)) {A ⊗ B} ≡ snd
+      prf3′′ = refl
+
+      prf3 : proj₁
+                (proj₂ (proj₂ (product A B)) (proj₁ (product A B))
+                  (proj₁ (proj₂ (product A B))))
+                ≡
+             proj₁ (snd fst fst₁)
+      prf3 = refl
+
+      prf4 : proj₁ (snd fst fst₁) ≡ id
+      prf4 = sym (w id (sym right-id , sym right-id))
+
+      -- prf4′ = trans prf3 prf4
+
+      prf3′ : proj₁
+                (proj₂ (proj₂ (product A B)) (proj₁ (product A B))
+                  (proj₁ (proj₂ (product A B))))
+                ≡
+             proj₁ (snd fst fst₁)
+      prf3′ = {!!}
+
+-- y : product-proj₁ (product A B) ≡
+--           fst ∘
+--           proj₁
+--           (snd (product-proj₁ (product A B)) (product-proj₂ (product A B)))
+
+      q : proj₁
+          (proj₂ (proj₂ (product A B)) (proj₁ (product A B))
+           (proj₁ (proj₂ (product A B))))
+          ≡
+          proj₁
+          (proj₂ (proj₂ (product A B)) (product-proj₁ (product A B))
+           (product-proj₂ (product A B)))
+      q = w fst₂ (trans prf (sym (rewrite-right-∘ p right-id)) , trans (sym right-id) (rewrite-right-∘ (trans prf3 prf4) refl))
+
+
+      s : bimap _⊗_ product id id
+                ≡
+            proj₁
+            (proj₂ (proj₂ (product A B))
+              (id ∘ proj₁ (product A B))
+              (id ∘ proj₁ (proj₂ (product A B))))
+      s = refl
+
+      s′ : proj₁
+            (proj₂ (proj₂ (product A B))
+              (id ∘ proj₁ (product A B))
+              (id ∘ proj₁ (proj₂ (product A B))))
+            ≡
+           proj₁
+            (proj₂ (proj₂ (product A B))
+              (proj₁ (product A B))
+              (proj₁ (proj₂ (product A B))))
+      s′ =
+        cong₂ (λ x₁ x₂ → proj₁ (proj₂ (proj₂ (product A B)) x₁ x₂))
+          left-id
+          left-id
+    in
+    trans (trans s s′) (trans q (trans prf3′ prf4))
+
+
+  --              !m
+  --        AxB  ----> AxB
+  --       f/ \g      p/ \q
+  --       A   B      A   B
+  Product-Functor :
+    (_⊗_ : Obj → Obj → Obj) →
+    (∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    Functor (ℂ ×cat ℂ) ℂ
+  Product-Functor _⊗_ product =
+    record
+      { act = λ (x , y) → x ⊗ y
+      ; fmap′ = λ A B (f , g) → bimap _⊗_ product f g
+      ; fmap-id′ = λ (A , B) →
+                 let
+                   s , t , pair-map = product A B
+
+                   z , (u , w) , v = pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B))
+
+                   p : bimap _⊗_ product id id ≡ proj₁ (pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B)))
+                   p = refl
+
+                   q : id ∘ product-proj₁ (product A B) ≡ product-proj₁ (product A B)
+                   q = left-id
+
+                   v' = v id
+
+                   r : proj₁ (pair-map (product-proj₁ (product A B)) (product-proj₂ (product A B))) ≡ id
+                   r = {!v!}
+                   -- q = u
+
+                   -- q : proj₁ (pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B)))
+                   --       ≡
+                   --     proj₁ (pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B)))
+                 in
+                 {!!}
+      ; fmap-∘′ = {!!}
+      }
+
+
 
   IsExponential : ∀ {A B : Obj} →
     (_⊗_ : Obj → Obj → Obj) →
