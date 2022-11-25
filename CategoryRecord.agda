@@ -327,6 +327,21 @@ _×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; id = id₁
     ; fmap-∘′ = λ A B C f g → refl
     }
 
+Functor-⊗ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {o₃ ℓ₃ o₄ ℓ₄} →
+  {ℂ₁ : Category o₁ ℓ₁} → {ℂ₂ : Category o₂ ℓ₂} →
+  {𝔻₁ : Category o₃ ℓ₃} → {𝔻₂ : Category o₄ ℓ₄} →
+  (F : Functor ℂ₁ 𝔻₁) →
+  (G : Functor ℂ₂ 𝔻₂) →
+  Functor (ℂ₁ ×cat ℂ₂) (𝔻₁ ×cat 𝔻₂)
+Functor-⊗ {_} {_} {_} {_} {_} {_} {_} {_} {ℂ₁} {ℂ₂} {𝔻₁} {𝔻₂} F G =
+  record
+    { act = λ (x , y) → (actf F x , actf G y)
+    ; fmap′ = λ A B (f , g) → Functor.fmap′ F (proj₁ A) (proj₁ B) f , Functor.fmap′ G (proj₂ A) (proj₂ B) g
+    ; fmap-id′ = λ A → cong₂ _,_ (Functor.fmap-id F) (Functor.fmap-id G)
+    ; fmap-∘′ = λ A B C f g → cong₂ _,_ (Functor.fmap-∘ F) (Functor.fmap-∘ G)
+    }
+
+
 [_,,_] : ∀ {o₁ ℓ₁ o₂ ℓ₂} (ℂ : Category o₁ ℓ₁) (𝔻 : Category o₂ ℓ₂) →
   Category (suc o₁ ⊔ suc ℓ₁ ⊔ suc o₂ ⊔ suc ℓ₂) (suc o₁ ⊔ suc ℓ₁ ⊔ suc o₂ ⊔ suc ℓ₂)
 [ ℂ ,, 𝔻 ] =

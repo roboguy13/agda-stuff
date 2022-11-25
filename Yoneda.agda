@@ -125,8 +125,8 @@ open CategoryProperties
 open import Data.Product
 
 よ-× : ∀ (A B : Category.Obj ℂop) →
-  IsProduct [ ℂop ,, Agda' ] (actf よ A) (actf よ B) (actf よ A × actf よ B)
-よ-× = ?
+  IsProduct [ ℂop ,, Agda' ] (actf よ A) (actf よ B) (actf (Product-Functor [ ℂop ,, Agda' ] {!!} {!!}) {!!})
+よ-× = {!!}
 
 -- ×-canon-proj₁-eq : ∀ {A B X : Set (o ⊔ ℓ)} {f : X → A} {g : X → B} →
 --   f ≡ (proj₁ ∘[ Agda' ] (λ x → f x , g x))
