@@ -47,18 +47,6 @@ syntax comp' f g = f ∘' g
 --                x ≈[ ℂ ] x′ →
 --                f x ≈[ ℂ ] f x′
 
-Op : ∀ {o ℓ} → Category o ℓ → Category o ℓ
-Op record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
-  record
-    { Obj = Obj
-    ; _⇒_ = λ x y → y ⇒ x
-    ; _∘_ = λ f g → g ∘ f
-    ; id = id
-    ; left-id = λ {A} {B} {f} → right-id
-    ; right-id = λ {A} {B} {f} → left-id
-    ; ∘-assoc = sym ∘-assoc
-    }
-
 module CatBasics
   {o ℓ : Level}
   (ℂ : Category o ℓ)

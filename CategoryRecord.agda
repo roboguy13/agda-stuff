@@ -105,6 +105,28 @@ _∘F_ {_} {_} {_} {_} {_} {_} {𝔸} {𝔹} {ℂ} F G =
              trans (Functor.fmap-∘ F) (cong (Functor.fmap F) p)
     }
 
+Id-Functor : {o ℓ : Level} →
+  {ℂ : Category o ℓ} →
+  Functor ℂ ℂ
+Id-Functor {_} {_} {ℂ} =
+  record
+    { act = λ A → A
+    ; fmap′ = λ A B f → f
+    ; fmap-id′ = λ A → refl
+    ; fmap-∘′ = λ A B C f g → refl
+    }
+
+Const-Functor : {o₁ ℓ₁ o₂ ℓ₂ : Level}
+  {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂}
+  (A : Category.Obj Tgt) → Functor Src Tgt
+Const-Functor {_} {_} {_} {_} {Src} {Tgt} A =
+  record
+    { act = λ _ → A
+    ; fmap′ = λ A₁ B x → Category.id Tgt
+    ; fmap-id′ = λ A₁ → refl
+    ; fmap-∘′ = λ A₁ B C f g → Category.left-id Tgt
+    }
+
 unfold-∘F : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} (A : Category o₁ ℓ₁) (B : Category o₂ ℓ₂) (C : Category o₃ ℓ₃) →
   (F : Functor B C) →
   (G : Functor A B) →
@@ -174,17 +196,39 @@ _∘WL_ {_} {_} {_} {_} {_} {_} {A} {B} {C} {F} {G} H α =
     open CatBasics
 
 
--- Whisker right
-_∘WR_ : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {A : Category o₁ ℓ₁} {B : Category o₂ ℓ₂} {C : Category o₃ ℓ₃} →
-  {F G : Functor B C} →
-  (α : NatTrans F G) →
-  (H : Functor A B) →
-  NatTrans (F ∘F H) (G ∘F H)
-_∘WR_ α H =
+-- -- Whisker right
+-- _∘WR_ : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {A : Category o₁ ℓ₁} {B : Category o₂ ℓ₂} {C : Category o₃ ℓ₃} →
+--   {F G : Functor B C} →
+--   (α : NatTrans F G) →
+--   (H : Functor A B) →
+--   NatTrans (F ∘F H) (G ∘F H)
+-- _∘WR_ α H =
+--   record
+--     { component = λ x → NatTrans.component α (Functor.act H x)
+--     ; natural = {!!}
+--     }
+
+Op : ∀ {o ℓ} → Category o ℓ → Category o ℓ
+Op record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
   record
-    { component = λ x → NatTrans.component α (Functor.act H x)
-    ; natural = {!!}
+    { Obj = Obj
+    ; _⇒_ = λ x y → y ⇒ x
+    ; _∘_ = λ f g → g ∘ f
+    ; id = id
+    ; left-id = λ {A} {B} {f} → right-id
+    ; right-id = λ {A} {B} {f} → left-id
+    ; ∘-assoc = sym ∘-assoc
     }
+
+-- Op-Functor : ∀ {o ℓ} {ℂ : Category o ℓ} →
+--   Functor ℂ (Op ℂ)
+-- Op-Functor {_} {_} {ℂ} =
+--   record
+--     { act = λ x → x
+--     ; fmap′ = λ A B x → {!!}
+--     ; fmap-id′ = {!!}
+--     ; fmap-∘′ = {!!}
+--     }
 
 _∘NT_ : {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂}
   {F G H : Functor Src Tgt} →

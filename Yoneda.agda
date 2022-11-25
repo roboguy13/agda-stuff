@@ -10,6 +10,9 @@ open import Relation.Binary.Structures
 
 open import Axiom.Extensionality.Propositional
 
+open CatBasics
+open Category.Category
+
 module Yoneda
   (o ℓ : Level)
   (ℂ : Category o ℓ)
@@ -30,13 +33,83 @@ Rep A =
   ; fmap-∘′ = λ _ _ _ _ _ → (fun-ext (λ x → Category.∘-assoc ℂ))
   }
 
+-- Corep : (A : Category.Obj ℂ) → Functor ℂ Agda'
+-- Corep A =
+--   record
+--   { act = λ X → (X ⇒[ ℂ ] A)
+--   ; fmap′ = λ B C f → λ t → ({!!} ∘[ ℂ ] {!!})
+--   ; fmap-id′ = λ _ → (fun-ext λ x → Category.right-id ℂ)
+--   ; fmap-∘′ = λ _ _ _ _ _ → (fun-ext (λ x → (Category.∘-assoc ℂ)))
+--   }
+
+
 よ : Functor ℂ [ ℂop ,, Agda' ]
 よ =
   record
     { act = λ x → Rep x
-    ; fmap′ = λ A B f → {!!}
-    ; fmap-id′ = {!!}
-    ; fmap-∘′ = {!!}
+    ; fmap′ = λ A B f →
+            record
+              { component = λ x x₁ → x₁ ∘[ ℂop ] f
+              ; natural = λ x y f₁ →
+                  fun-ext λ x₁ →
+                    let
+                      q : comp Agda' (λ x₂ → comp ℂop x₂ f) (Functor.fmap (Rep A) f₁) x₁
+                               ≡
+                          (Functor.fmap (Rep A) f₁ x₁ ∘[ ℂop ] f)
+                      q = refl
+
+                      q2 : (Functor.fmap (Rep A) f₁ x₁ ∘[ ℂop ] f)
+                               ≡
+                          ((f₁ ∘[ ℂop ] x₁) ∘[ ℂop ] f)
+                      q2 = refl
+
+
+                      q3 : ((f₁ ∘[ ℂop ] x₁) ∘[ ℂop ] f)
+                               ≡
+                           (f₁ ∘[ ℂop ] (x₁ ∘[ ℂop ] f))
+                      q3 = ∘-assoc ℂop
+                        --------------------
+
+
+                      w0 : (f₁ ∘[ ℂop ] (x₁ ∘[ ℂop ] f))
+                                ≡
+                           (Functor.fmap (Rep B) f₁ (x₁ ∘[ ℂop ] f))
+                      w0 = refl
+
+                      w : (Functor.fmap (Rep B) f₁ (x₁ ∘[ ℂop ] f))
+                               ≡
+                          (comp Agda' (Functor.fmap (Rep B) f₁) (λ x₂ → comp ℂop x₂ f) x₁)
+                      w = refl
+                    in
+                    trans q (trans q2 (trans q3 (trans w0 w)))
+              }
+    ; fmap-id′ = λ A → NatTrans-η (fun-ext λ x → fun-ext λ y → left-id ℂ)
+    ; fmap-∘′ = λ A B C f g → NatTrans-η (fun-ext λ x → fun-ext λ y →
+        let
+          α : NatTrans (Rep B) (Rep C)
+          α = (record
+                    { component = λ x₁ x₂ → comp ℂop x₂ f
+                    ; natural = λ x₁ y₁ f₁ → fun-ext (λ x₂ → trans (∘-assoc ℂop) refl)
+                    })
+
+          β : NatTrans (Rep A) (Rep B)
+          β = (record
+                    { component = λ x₁ x₂ → comp ℂop x₂ g
+                    ; natural = λ x₁ y₁ f₁ → fun-ext (λ x₂ → trans (∘-assoc ℂop) refl)
+                    })
+          p : NatTrans.component
+                (comp [ ℂop ,, Agda' ] α β) x y
+                  ≡
+              comp ℂop (comp ℂop y g) f
+          p = refl
+
+          q0 : ∀ {A′ B′ C′} {u : A′ ⇒[ ℂ ] B′} {v : B′ ⇒[ ℂ ] C′} → comp ℂop u v ≡ comp ℂ v u
+          q0 = refl
+
+          q : comp ℂ f  (comp ℂ g  y) ≡ comp ℂop y (comp ℂ f g)
+          q = trans (sym (∘-assoc ℂ)) (sym q0)
+        in
+        trans p q)
     }
 
 -- よ : (A : Category.Obj ℂop) → Functor ℂop (Agda ℓ ℓ ℓ)
