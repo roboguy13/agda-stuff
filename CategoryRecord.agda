@@ -771,9 +771,6 @@ module CategoryProperties
     (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
     ∀ {A B} →
     bimap _⊗_ product {A} {A} {B} {B} id id ≡ id
-  -- bimap-id _⊗_ product {A} {B} with product A B in eq
-  -- ... | fst , fst₁ , snd with snd fst fst₁
-  -- bimap-id _⊗_ product {A} {B} | fst , fst₁ , snd | fst₂ , (u , v) , snd₁ =
   bimap-id _⊗_ product {A} {B} =
     let
       fst , fst₁ , snd = product A B
@@ -812,7 +809,7 @@ module CategoryProperties
                   (proj₁ (proj₂ (product A B))))
                 ≡
              proj₁ (snd fst fst₁)
-      prf3′ = {!!}
+      prf3′ = refl
 
 -- y : product-proj₁ (product A B) ≡
 --           fst ∘
@@ -853,6 +850,163 @@ module CategoryProperties
     in
     trans (trans s s′) (trans q (trans prf3′ prf4))
 
+  bimap-canon : ∀ {X Y Z W} {u : X ⇒ Y} {v : Z ⇒ W} →
+    (_⊗_ : Obj → Obj → Obj) →
+    (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    (bimap _⊗_ product u v)
+        ≡
+    proj₁
+      (proj₂ (proj₂ (product Y W))
+        (u ∘ proj₁ (product X Z))
+        (v ∘ proj₁ (proj₂ (product X Z))))
+  bimap-canon _ _ = refl
+
+  bimap-proj₁ : ∀ {X Y Z W} {u : X ⇒ Y} {v : Z ⇒ W} →
+    (_⊗_ : Obj → Obj → Obj) →
+    (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    (product-proj₁ (product Y W) ∘ bimap _⊗_ product u v)
+      ≡
+    (u ∘ product-proj₁ (product X Z))
+  bimap-proj₁ {X} {Y} {Z} {W} {u} {v} _⊗_ product =
+    let
+      _ , _ , univ = product Y W
+      _ , (prf1 , _) , _ = univ (u ∘ product-proj₁ (product X Z)) (v ∘ product-proj₂ (product X Z))
+    in
+    sym prf1
+
+  bimap-proj₂ : ∀ {X Y Z W} {u : X ⇒ Y} {v : Z ⇒ W} →
+    (_⊗_ : Obj → Obj → Obj) →
+    (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    (product-proj₂ (product Y W) ∘ bimap _⊗_ product u v)
+      ≡
+    (v ∘ product-proj₂ (product X Z))
+  bimap-proj₂ {X} {Y} {Z} {W} {u} {v} _⊗_ product =
+    let
+      _ , _ , univ = product Y W
+      _ , (_ , prf2) , _ = univ (u ∘ product-proj₁ (product X Z)) (v ∘ product-proj₂ (product X Z))
+    in
+    sym prf2
+
+  -- product-proj₁-id : ∀ {A B S T} {f : A ⇒ S} {g : B ⇒ T} →
+  --   (_⊗_ : Obj → Obj → Obj) →
+  --   (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+  --   product-proj₁ (product S T) ∘ proj₁
+  --                                   (proj₂ (proj₂ (product S T)) (f ∘ proj₁ (product A B))
+  --                                   (g ∘ proj₁ (proj₂ (product A B))))
+  --     ≡
+  --   f ∘ product-proj₁ (product A B)
+  -- product-proj₁-id {A} {B} {S} {T} {f} {g} _⊗_ product = bimap-proj₁ _⊗_ product
+
+  bimap-canon-folded : ∀ {X Y Z W} {u : X ⇒ Y} {v : Z ⇒ W} →
+    (_⊗_ : Obj → Obj → Obj) →
+    (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    (bimap _⊗_ product u v)
+        ≡
+    proj₁
+      (proj₂ (proj₂ (product Y W))
+        (product-proj₁ (product Y W) ∘ (bimap _⊗_ product u v))
+        (product-proj₂ (product Y W) ∘ (bimap _⊗_ product u v)))
+  bimap-canon-folded {X} {Y} {Z} {W} {u} {v} _⊗_ product =
+    let
+      uv = bimap _⊗_ product u v
+
+      a , b , c = product Y W
+
+      f , m1 , m2 = c (product-proj₁ (product Y W) ∘ uv) (product-proj₂ (product Y W) ∘ uv)
+
+      n = m2 (bimap _⊗_ product u v) (refl , refl)
+    in
+    n
+
+  bimap-∘ : ∀ {X Y Z W Y′ W′} {u : X ⇒ Y} {v : Z ⇒ W} {u′ : Y ⇒ Y′} {v′ : W ⇒ W′} →
+    (_⊗_ : Obj → Obj → Obj) →
+    (product : ∀ X Y → IsProduct X Y (X ⊗ Y)) →
+    (bimap _⊗_ product u′ v′ ∘ bimap _⊗_ product u v)
+      ≡
+    bimap _⊗_ product (u′ ∘ u) (v′ ∘ v)
+  bimap-∘ {X} {Y} {Z} {W} {Y′} {W′} {u} {v} {u′} {v′} _⊗_ product =
+    let
+      q , r , m = product Y′ W′
+
+      b = bimap _⊗_ product (u′ ∘ u) (v′ ∘ v)
+
+      m' , prf1 , univ = m (product-proj₁ (product Y′ W′) ∘ b) (product-proj₂ (product Y′ W′) ∘ b)
+
+      h = proj₁
+            (proj₂ (proj₂ (product Y′ W′)) ((u′ ∘ u) ∘ proj₁ (product X Z))
+              ((v′ ∘ v) ∘ proj₁ (proj₂ (product X Z))))
+
+      univ-h :
+          proj₁
+          (proj₂ (proj₂ (product Y′ W′))
+            ((u′ ∘ u) ∘ proj₁ (product X Z))
+            ((v′ ∘ v) ∘ proj₁ (proj₂ (product X Z))))
+          ≡
+          proj₁
+          (proj₂ (proj₂ (product Y′ W′))
+           (product-proj₁ (product Y′ W′) ∘
+            bimap _⊗_ product (u′ ∘ u) (v′ ∘ v))
+           (product-proj₂ (product Y′ W′) ∘
+            bimap _⊗_ product (u′ ∘ u) (v′ ∘ v)))
+
+      univ-h = univ h (refl , refl)
+
+      q : (f : (X ⊗ Z) ⇒ Y′) (g : (X ⊗ Z) ⇒ W′) →
+          Σ![ (X ⊗ Z) ⇒ Y′ ⊗ W′ ]
+          (λ m₁ →
+             f ≡ proj₁ (product Y′ W′) ∘ m₁ ×
+             g ≡ proj₁ (proj₂ (product Y′ W′)) ∘ m₁)
+
+      q = proj₂ (proj₂ (product Y′ W′))
+
+      canon0 = sym (bimap-canon {W′ ⊗ W′} {W′ ⊗ W′} {W′ ⊗ W′} {W′ ⊗ W′} {Category.id ℂ} {Category.id ℂ} _⊗_ product)
+
+      canon :
+          proj₁
+          (q
+           (product-proj₁ (product Y′ W′) ∘
+            bimap _⊗_ product (u′ ∘ u) (v′ ∘ v))
+           (product-proj₂ (product Y′ W′) ∘
+            bimap _⊗_ product (u′ ∘ u) (v′ ∘ v)))
+            ≡
+          bimap _⊗_ product (u′ ∘ u) (v′ ∘ v)
+      canon = sym (bimap-canon-folded _⊗_ product)
+
+      univ-h′ :  proj₁
+          (proj₂ (proj₂ (product Y′ W′)) ((u′ ∘ u) ∘ proj₁ (product X Z))
+           ((v′ ∘ v) ∘ proj₁ (proj₂ (product X Z))))
+          ≡ bimap _⊗_ product (u′ ∘ u) (v′ ∘ v)
+      univ-h′ = refl
+
+      h2 = bimap _⊗_ product u′ v′ ∘ bimap _⊗_ product u v
+
+      univ-h2-0 : (u′ ∘ u) ∘ product-proj₁ (product X Z) ≡
+                    proj₁ (product Y′ W′) ∘
+                    proj₁
+                    (proj₂ (proj₂ (product Y′ W′)) (u′ ∘ proj₁ (product Y W))
+                    (v′ ∘ proj₁ (proj₂ (product Y W))))
+                    ∘ bimap _⊗_ product u v
+      univ-h2-0 =
+        trans (trans ∘-assoc (rewrite-right-∘ (bimap-proj₁ _⊗_ product) refl)) (trans (sym ∘-assoc) (rewrite-left-∘ (bimap-proj₁ _⊗_ product) ∘-assoc))
+
+      univ-h2-1 : (v′ ∘ v) ∘ product-proj₂ (product X Z) ≡
+                    proj₁ (proj₂ (product Y′ W′)) ∘
+                    proj₁
+                    (proj₂ (proj₂ (product Y′ W′)) (u′ ∘ proj₁ (product Y W))
+                    (v′ ∘ proj₁ (proj₂ (product Y W))))
+                    ∘ bimap _⊗_ product u v
+      univ-h2-1 =
+        trans (trans ∘-assoc (rewrite-right-∘ (bimap-proj₂ _⊗_ product) refl)) (trans (sym ∘-assoc) (rewrite-left-∘ (bimap-proj₂ _⊗_ product) ∘-assoc))
+
+      univ-h2 = univ h2
+        (trans (bimap-proj₁ _⊗_ product) (trans univ-h2-0 (trans (rewrite-right-∘ (rewrite-left-∘ (sym (bimap-canon _⊗_ product)) refl) refl) (rewrite-right-∘ (rewrite-left-∘ (sym (bimap-canon _⊗_ product)) refl) refl)))
+          ,
+         trans (bimap-proj₂ _⊗_ product) (trans univ-h2-1 (trans (rewrite-right-∘ (rewrite-left-∘ (sym (bimap-canon _⊗_ product)) refl) refl) (rewrite-right-∘ (rewrite-left-∘ (sym (bimap-canon _⊗_ product)) refl) refl)))
+        )
+
+      w = trans (bimap-canon-folded _⊗_ product) (sym univ-h2)
+    in
+      sym w
 
   --              !m
   --        AxB  ----> AxB
@@ -866,30 +1020,33 @@ module CategoryProperties
     record
       { act = λ (x , y) → x ⊗ y
       ; fmap′ = λ A B (f , g) → bimap _⊗_ product f g
-      ; fmap-id′ = λ (A , B) →
-                 let
-                   s , t , pair-map = product A B
+      ; fmap-id′ = λ (A , B) → bimap-id _⊗_ product
+      ; fmap-∘′ = λ R S T f g →
+                let
+                  f1 , f2 = f
+                  g1 , g2 = g
 
-                   z , (u , w) , v = pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B))
+                  q1 : proj₁ (comp (ℂ ×cat ℂ) f g) ≡ (f1 ∘ g1)
+                  q1 = refl
 
-                   p : bimap _⊗_ product id id ≡ proj₁ (pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B)))
-                   p = refl
+                  q2 : proj₂ (comp (ℂ ×cat ℂ) f g) ≡ (f2 ∘ g2)
+                  q2 = refl
 
-                   q : id ∘ product-proj₁ (product A B) ≡ product-proj₁ (product A B)
-                   q = left-id
+                  r : proj₁
+                        (proj₂ (proj₂ (product (proj₁ T) (proj₂ T)))
+                          (proj₁ (comp (ℂ ×cat ℂ) f g) ∘ proj₁ (product (proj₁ R) (proj₂ R)))
+                          (proj₂ (comp (ℂ ×cat ℂ) f g) ∘
+                            proj₁ (proj₂ (product (proj₁ R) (proj₂ R)))))
+                      ≡
+                      proj₁
+                        (proj₂ (proj₂ (product (proj₁ T) (proj₂ T)))
+                          ((f1 ∘ g1) ∘ proj₁ (product (proj₁ R) (proj₂ R)))
+                          ((f2 ∘ g2) ∘
+                            proj₁ (proj₂ (product (proj₁ R) (proj₂ R)))))
+                  r = refl
 
-                   v' = v id
-
-                   r : proj₁ (pair-map (product-proj₁ (product A B)) (product-proj₂ (product A B))) ≡ id
-                   r = {!v!}
-                   -- q = u
-
-                   -- q : proj₁ (pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B)))
-                   --       ≡
-                   --     proj₁ (pair-map (id ∘ product-proj₁ (product A B)) (id ∘ product-proj₂ (product A B)))
-                 in
-                 {!!}
-      ; fmap-∘′ = {!!}
+                in
+                trans (rewrite-left-∘ (sym (bimap-canon _⊗_ product)) refl) (trans (trans (bimap-∘ _⊗_ product) (sym r)) (sym (bimap-canon _⊗_ product)))
       }
 
 
