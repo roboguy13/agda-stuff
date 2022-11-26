@@ -10,6 +10,28 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 module FunctorProperties
   where
 
+Is-NatIso : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+  (F G : Functor ℂ 𝔻) →
+  NatTrans F G →
+  Set (o₁ ⊔ ℓ₂)
+Is-NatIso {_} {_} {_} {_} {ℂ} {𝔻} F G α =
+  ∀ x → ∃[ α⁻¹x ] (Iso 𝔻 (NatTrans.component α x) (α⁻¹x))
+  where
+  open ElementaryProperties
+
+NatIso : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+  (F G : Functor ℂ 𝔻) →
+  Set (suc o₁ ⊔ suc ℓ₁ ⊔ suc o₂ ⊔ suc ℓ₂)
+NatIso {_} {_} {_} {_} {ℂ} {𝔻} F G =
+  Σ (NatTrans F G) (Is-NatIso F G)
+  where
+  open ElementaryProperties
+
+_≃_ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+  (F G : Functor ℂ 𝔻) →
+  Set (suc o₁ ⊔ suc ℓ₁ ⊔ suc o₂ ⊔ suc ℓ₂)
+_≃_ F G = NatIso F G
+
 -- --              !m
 --        AxB  ----> AxB
 --       f/ \g      p/ \q

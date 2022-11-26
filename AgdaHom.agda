@@ -1,4 +1,6 @@
-open import CategoryRecord
+open import Category
+open import FunctorDefs
+import ElementaryProperties
 open import Agda
 open import Relation.Binary using (IsEquivalence)
 
@@ -8,9 +10,8 @@ open import Relation.Binary.PropositionalEquality
 open import Level
 
 module AgdaHom
-  (e : Level)
   (ℓ : Level)
-  (Eq-ℂ : Eq-Category (suc e) (suc ℓ) )
+  (ℂ : Category (suc ℓ) ℓ )
   -- (let _≈_ = Category._≈_ Eq-ℂ)
 
   -- (_≈ₒ_ : ∀ {m} {A : Set m} → A → A → Set m)
@@ -26,16 +27,15 @@ module AgdaHom
   --              f x y ≈ f x′ y′)
   where
 
-ℂ = Cat Eq-ℂ
 
-open Category ℂ
-open CategoryProperties ℂ hiding (refl; trans; sym)
-open import Yoneda e ℓ Eq-ℂ
+open Category.Category ℂ
+open ElementaryProperties ℂ
+-- open import Yoneda e ℓ ℂ
 
 -- open IsEquivalence (Category.equiv ℂ {{!!}} {{!!}})
 
-Agda′ : Category (suc (suc ℓ)) (suc ℓ) (suc ℓ ⊔ e)
-Agda′ = Agda ℓ e
+Agda′ : Category (suc ℓ) ℓ
+Agda′ = Agda {ℓ} {ℓ}
 -- Agda′ = Agda ? ? (Category._≈_ ℂ) ? ? ? --≈-cong ≈-cong₂
 
 -- reflₒ : ∀ {A B} {f : A ⇒[ Agda′ ] B} → f ≈ₒ f
@@ -77,27 +77,27 @@ Hom-F : Functor (Op ℂ ×cat ℂ) Agda′
 Hom-F =
   record
   { act = λ (A , B) → Hom A B
-  ; fmap = λ {A} {B} (f₁ , f₂) g → f₂ ∘ g ∘ f₁
-  ; fmap-id = λ {T} →
+  ; fmap′ = λ A B (f₁ , f₂) → lift λ g → f₂ ∘ g ∘ f₁
+  ; fmap-id′ = λ T →
             let
               eq1 : (λ g → id {proj₂ T} ∘ g ∘ id {proj₁ T}) ≡ (λ g → id ∘ g)
-              eq1 = fun-ext ℓ ℓ λ x →
+              eq1 = fun-ext λ x →
                 let
                   p = Category.right-id ℂ {_} {_} {id ∘ x}
                 in
                 trans (sym (Category.∘-assoc ℂ)) p
 
-              eq2 : (λ (g : proj₁ T ⇒ proj₂ T) → id {proj₂ T} ∘ g) ≡ Category.id Agda′
-              eq2 = fun-ext ℓ ℓ λ x → Category.left-id ℂ {_} {_} {x}
+              eq2 : (λ (g : proj₁ T ⇒ proj₂ T) → id {proj₂ T} ∘ g) ≡ lower (Category.id Agda′)
+              eq2 = fun-ext λ x → Category.left-id ℂ {_} {_} {x}
             in
-            lift (trans eq1 eq2)
-  ; fmap-∘ = λ {X} {A} {B} {f} {g} →
+            cong lift (trans eq1 eq2)
+  ; fmap-∘′ = λ X A B f g →
            let
-             eq1 :   (λ h → proj₂ f ∘ h ∘ proj₁ f)
+             eq1 :   lift (λ h → proj₂ f ∘ h ∘ proj₁ f)
                         ∘[ Agda′ ]
-                     (λ i → proj₂ g ∘ i ∘ proj₁ g)
+                     lift (λ i → proj₂ g ∘ i ∘ proj₁ g)
                    ≡
-                     λ z → proj₂ f ∘ (proj₂ g ∘ z ∘ proj₁ g) ∘ proj₁ f
+                     lift λ z → proj₂ f ∘ (proj₂ g ∘ z ∘ proj₁ g) ∘ proj₁ f
              eq1 = refl
 
              p z = proj₂ g ∘ z ∘ proj₁ g
@@ -110,9 +110,9 @@ Hom-F =
              eq2 :  (λ (z : proj₁ X ⇒ proj₂ X) → proj₂ f ∘ (proj₂ g ∘ z ∘ proj₁ g) ∘ proj₁ f)
                    ≡
                     (λ (z : proj₁ X ⇒ proj₂ X) → (proj₂ f ∘ proj₂ g) ∘ z ∘ (proj₁ g ∘ proj₁ f))
-             eq2 = fun-ext ℓ ℓ λ z → ∘-assoc5-mid
+             eq2 = fun-ext λ z → CatBasics.∘-assoc5-mid ℂ
            in
-           lift (trans eq1 eq2)
+           (trans eq1 (cong lift eq2))
   }
 
 
@@ -201,28 +201,28 @@ Hom-Ev (f , x) = f x
 --   in
 --   {!!}
 
-Curry :
-  (_⊗_ : Obj → Obj → Obj) →
-  (product : ∀ A B → IsProduct A B (A ⊗ B)) →
-  (_⟶_ : Obj → Obj → Obj) →
-  (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
-  (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
-  ∀ {A B R} →
-  Hom (A ⊗ B) R ⇒[ Agda′ ] Hom A (B ⟶ R)
-Curry _⊗_ product _⟶_ ev exp {A} {B} {R} with exp B R {!!} {!!}
-... | fst , fst₁ , snd = λ x → fst ∘ {!!}
+-- Curry :
+--   (_⊗_ : Obj → Obj → Obj) →
+--   (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+--   (_⟶_ : Obj → Obj → Obj) →
+--   (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+--   (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+--   ∀ {A B R} →
+--   Hom (A ⊗ B) R ⇒[ Agda′ ] Hom A (B ⟶ R)
+-- Curry _⊗_ product _⟶_ ev exp {A} {B} {R} with exp B R {!!} {!!}
+-- ... | fst , fst₁ , snd = λ x → fst ∘ {!!}
 
-Curry-Iso :
-  (_⊗_ : Obj → Obj → Obj) →
-  (product : ∀ A B → IsProduct A B (A ⊗ B)) →
-  (_⟶_ : Obj → Obj → Obj) →
-  (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
-  (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
-  ∀ {A B R} →
-  Hom (A ⊗ B) R ≅[ Agda′ ] Hom A (B ⟶ R)
-Curry-Iso _⊗_ product _⟶_ ev exp {A} {B} {R} with exp B R (B ⟶ R) (ev B R)
-... | fst , fst₁ , snd =
-  (λ x → {!!}) , (λ x → {!!}) , (lift {!!}) , (lift {!!})
+-- Curry-Iso :
+--   (_⊗_ : Obj → Obj → Obj) →
+--   (product : ∀ A B → IsProduct A B (A ⊗ B)) →
+--   (_⟶_ : Obj → Obj → Obj) →
+--   (ev : ∀ A B → ((A ⟶ B) ⊗ A) ⇒ B) →
+--   (∀ A B → IsExponential _⊗_ product (A ⟶ B) (ev A B)) →
+--   ∀ {A B R} →
+--   Hom (A ⊗ B) R ≅[ Agda′ ] Hom A (B ⟶ R)
+-- Curry-Iso _⊗_ product _⟶_ ev exp {A} {B} {R} with exp B R (B ⟶ R) (ev B R)
+-- ... | fst , fst₁ , snd =
+--   (λ x → {!!}) , (λ x → {!!}) , (lift {!!}) , (lift {!!})
 
 -- Hom-×-Iso :
 --   (_⊗_ : Obj → Obj → Obj) →

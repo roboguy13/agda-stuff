@@ -153,15 +153,15 @@ open import Data.Product
 -- p : Functor ? ?
 -- p A B = 
 
-Agda-Product : ∀ (A B : Category.Obj ℂop) → Functor ℂ ([ ℂop ,, Agda ] ×cat [ ℂop ,, Agda ])
--- Agda-Product A B = (Product-Functor {_} {_} {Agda'} _×_ ×-IsProduct)
--- Agda-Product A B = ((Functor-⊗ (actf よ A) (actf よ B)))
--- Agda-Product A B = ((Product-Functor {_} {_} {Agda'} _×_ ×-IsProduct ∘F Functor-⊗ (actf よ A) (actf よ B)) ∘F {!!}) --(FΔ ∘F {!!}))
--- Agda-Product A B = ((Product-Functor {_} {_} {{!!}} _×_ ×-IsProduct ∘F Functor-⊗ (Rep A) (Rep B)) ∘F Functor-⊗ {!!} {!!}) --(FΔ ∘F {!!}))
-Agda-Product A B = Functor-⊗ よ よ ∘F FΔ
+-- Agda-Product : ∀ (A B : Category.Obj ℂop) → Functor ℂ ([ ℂop ,, Agda ] ×cat [ ℂop ,, Agda ])
+-- -- Agda-Product A B = (Product-Functor {_} {_} {Agda'} _×_ ×-IsProduct)
+-- -- Agda-Product A B = ((Functor-⊗ (actf よ A) (actf よ B)))
+-- -- Agda-Product A B = ((Product-Functor {_} {_} {Agda'} _×_ ×-IsProduct ∘F Functor-⊗ (actf よ A) (actf よ B)) ∘F {!!}) --(FΔ ∘F {!!}))
+-- -- Agda-Product A B = ((Product-Functor {_} {_} {{!!}} _×_ ×-IsProduct ∘F Functor-⊗ (Rep A) (Rep B)) ∘F Functor-⊗ {!!} {!!}) --(FΔ ∘F {!!}))
+-- Agda-Product A B = Functor-⊗ よ よ ∘F FΔ
 
-Agda-Product′ : ∀ (A B : Category.Obj ℂop) → Functor {!!} {!!}
-Agda-Product′ A B = Product-Functor {_} {_} {[ {!!} ,, {!!} ]} (Functor-⊗′ _×_ ×-IsProduct) {!!} ∘F {!!}
+-- Agda-Product′ : ∀ (A B : Category.Obj ℂop) → Functor {!!} {!!}
+-- Agda-Product′ A B = Product-Functor {_} {_} {[ {!!} ,, {!!} ]} (Functor-⊗′ _×_ ×-IsProduct) {!!} ∘F {!!}
 
 
 -- よ-× : ∀ (A B : Category.Obj ℂop) →

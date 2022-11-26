@@ -379,6 +379,20 @@ FΔ {_} {_} {ℂ} =
     open Category.Category 𝔻
     open CatBasics 𝔻
 
+-- Nat[_,,_] : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+--   (F G : Functor ℂ 𝔻) →
+--   Category {!!} {!!}
+-- Nat[_,,_] {_} {_} {_} {_} {ℂ} {𝔻} F G =
+--   record
+--     { Obj = NatTrans F G
+--     ; _⇒_ = {!!}
+--     ; _∘_ = {!!}
+--     ; id = {!!}
+--     ; left-id = {!!}
+--     ; right-id = {!!}
+--     ; ∘-assoc = {!!}
+--     }
+
 Iso′ : ∀ {o ℓ} (ℂ : Category o ℓ) →
   (A B : Category.Obj ℂ) →
   Set ℓ
