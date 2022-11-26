@@ -14,8 +14,10 @@ open import Data.Empty
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 
 open import Axiom.Extensionality.Propositional
-open import Relation.Binary.HeterogeneousEquality using (refl) renaming (_≅_ to _H≅_)
+open import Relation.Binary.HeterogeneousEquality using (refl; ≡-to-≅) renaming (_≅_ to _H≅_; trans to H-trans; sym to H-sym)
 open import Axiom.UniquenessOfIdentityProofs.WithK
+
+open import Axiom.Extensionality.Heterogeneous renaming (Extensionality to H-Extensionality)
 
 open import Level
 
@@ -25,6 +27,7 @@ module FunctorDefs
   where
 
 postulate fun-ext : ∀ {m n} → Extensionality m n
+postulate H-fun-ext : ∀ {m n} → H-Extensionality m n
 
 case_of_ : ∀ {a b} {A : Set a} {B : Set b} → A → (A → B) → B
 case x of f = f x
@@ -220,6 +223,20 @@ Op record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left
     ; ∘-assoc = sym ∘-assoc
     }
 
+Const-Functor-commutes : {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂} {𝔼 : Category o₂ ℓ₂} →
+  {F : Functor Src Tgt} {c : Category.Obj Src} →
+  (Const-Functor {o₂} {ℓ₂} {o₂} {ℓ₂} {𝔼} {Tgt} (actf F c)) ≡ (F ∘F Const-Functor c)
+Const-Functor-commutes {_} {_} {_} {_} {_} {_} {_} {_} {_} {F} {c} =
+  Functor-η
+    refl
+    (H-fun-ext (λ _ → refl)
+      λ x →
+        H-fun-ext (λ _ → refl)
+          λ y →
+            H-fun-ext (λ _ → refl)
+              λ z →
+                ≡-to-≅ (sym (Functor.fmap-id F)))
+
 -- Op-Functor : ∀ {o ℓ} {ℂ : Category o ℓ} →
 --   Functor ℂ (Op ℂ)
 -- Op-Functor {_} {_} {ℂ} =
@@ -241,6 +258,11 @@ NT-id {_} {_} {_} {_} {Src} {Tgt} {F} =
           (trans (Category.left-id Tgt)
             (sym (CatBasics.rewrite-right-∘ Tgt (sym (Functor.fmap-id F)) (Category.right-id Tgt))))
     }
+
+-- Const-Functor-commutes : {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂} →
+--   {F : Functor Src Tgt} {c : Category.Obj Src} →
+--   (Const-Functor {o₁} {ℓ₁} {o₂} {ℓ₂} {Src} {Tgt} (actf F c)) ≡ (F ∘F Const-Functor c)
+-- Const-Functor-commutes {_} {_} {_} {_} {_} {_} {F} = {!!} --Functor-η ? ?
 
 _∘NT_ : {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂}
   {F G H : Functor Src Tgt} →

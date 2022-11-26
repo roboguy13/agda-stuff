@@ -15,23 +15,12 @@ open import Data.Unit
 open import Data.Product
 
 open import Relation.Binary.PropositionalEquality hiding (Extensionality)
+open import Relation.Binary.HeterogeneousEquality hiding (trans; sym; cong; subst) renaming (_≅_ to _H≅_)
 
 open import Axiom.UniquenessOfIdentityProofs.WithK
 
 module Limits
   where
-
-Fin-Cat : (n : ℕ) → Category Level.zero Level.zero
-Fin-Cat n =
-  record
-    { Obj = Fin n
-    ; _⇒_ = λ A B → A ≡ B
-    ; _∘_ = λ f g → trans g f
-    ; id = refl
-    ; left-id = λ {A} {B} {f} → uip (trans f refl) f
-    ; right-id = refl -- TODO: Why the asymmetry here?
-    ; ∘-assoc = λ {A} {B} {C} {D} {f} {g} {h} → uip (trans h (trans g f)) (trans (trans h g) f)
-    }
 
 Cone : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   (F : Functor ℂ 𝔻) →
@@ -39,6 +28,20 @@ Cone : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Catego
   Set (Level.suc o₁ Level.⊔ Level.suc ℓ₁ Level.⊔ Level.suc o₂ Level.⊔ Level.suc ℓ₂)
 Cone F c =
   NatTrans (Const-Functor c) F
+
+Cone-∘ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₁ ℓ₁} →
+  (F : Functor ℂ 𝔻) →
+  (c : Category.Obj 𝔻) →
+  (G : Functor 𝔻 𝔼) →
+  Cone F c →
+  Cone (G ∘F F) (actf G c)
+Cone-∘ {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} {𝔻} {𝔼} F c G cone =
+  ((G ∘WL cone)
+    ∘NT
+   subst (λ x → NatTrans x (G ∘F Const-Functor c))
+     (sym (Const-Functor-commutes {o₂} {ℓ₂} {o₁} {ℓ₁} {ℓ₂} {ℓ₂} {𝔻} {𝔼} {ℂ} {G}))
+     NT-id
+   )
 
 ACone : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   (F : Functor ℂ 𝔻) →
@@ -61,6 +64,87 @@ Lim : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Categor
   (F : Functor ℂ 𝔻) →
   Set (lsuc o₁ Level.⊔ lsuc ℓ₁ Level.⊔ lsuc o₂ Level.⊔ lsuc ℓ₂)
 Lim F = ∃[ c ] ∃[ cone ] (Is-Universal-Cone F c cone)
+
+
+
+Fin-Cat : (n : ℕ) → Category Level.zero Level.zero
+Fin-Cat n =
+  record
+    { Obj = Fin n
+    ; _⇒_ = λ A B → A ≡ B
+    ; _∘_ = λ f g → trans g f
+    ; id = refl
+    ; left-id = λ {A} {B} {f} → uip (trans f refl) f
+    ; right-id = refl -- TODO: Why the asymmetry here?
+    ; ∘-assoc = λ {A} {B} {C} {D} {f} {g} {h} → uip (trans h (trans g f)) (trans (trans h g) f)
+    }
+
+private
+  eq-apply : ∀ {m} {A B : Set m} →
+    A ≡ B →
+    A →
+    B
+  eq-apply refl x = x
+
+  elim-eq-apply : ∀ {m} {A B : Set m} {x} →
+    (prf : A ≡ B) →
+    eq-apply prf x H≅ x
+  elim-eq-apply {_} {_} {_} {_} refl = refl
+    -- x H≅ y
+  -- elim-eq-apply {_} {_} {_} {_} {_} {refl} refl = refl
+
+Fin-Cat-Functor : ∀ {o ℓ} {ℂ : Category o ℓ} →
+  {n : ℕ} →
+  (Fin n → Category.Obj ℂ) →
+  Functor (Fin-Cat n) ℂ
+Fin-Cat-Functor {_} {_} {ℂ} {n} fn =
+  record
+    { act = fn
+    ; fmap′ = fmap-def
+    ; fmap-id′ = λ A → refl
+    ; fmap-∘′ = fmap-∘-def
+    }
+    where
+      fmap-def : (A B : Fin n) → Arr (Fin-Cat n) A B → Arr ℂ (fn A) (fn B)
+      fmap-def A B refl = Category.id ℂ
+
+      fmap-∘-def : (A B C : Fin n) (f : Arr (Fin-Cat n) B C)
+                    (g : Arr (Fin-Cat n) A B) →
+                    comp ℂ (fmap-def B C f) (fmap-def A B g) ≡
+                    fmap-def A C (comp (Fin-Cat n) f g)
+      fmap-∘-def A B C refl refl = Category.left-id ℂ
+
+×-Limit : ∀ {o ℓ} {ℂ : Category o ℓ} → (A B : Category.Obj ℂ) → Set (lsuc o Level.⊔ lsuc ℓ)
+×-Limit {o} {ℓ} {ℂ} A B =
+  Lim {Level.zero} {Level.zero} {o} {ℓ} {Fin-Cat 2} {ℂ} (Fin-Cat-Functor go)
+  where
+    go : Fin 2 → Category.Obj ℂ
+    go Fin.zero = A
+    go (suc Fin.zero) = B
+
+Is-Continuous : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+  ∀ {o₃ ℓ₃} →
+  Functor ℂ 𝔻 →
+  Set (lsuc o₁ Level.⊔ lsuc ℓ₁ Level.⊔ lsuc o₂ Level.⊔ lsuc ℓ₂ Level.⊔
+         lsuc o₃
+         Level.⊔ lsuc ℓ₃
+         Level.⊔ ℓ₂)
+Is-Continuous {_} {_} {_} {_} {ℂ} {𝔻} {o₃} {ℓ₃} F =
+  (𝔼 : Category o₃ ℓ₃) →
+  (A : Functor 𝔼 ℂ) →
+  (lim-A : Lim A) →
+  (lim-FA : Lim (F ∘F A)) →
+  let
+    lim-A-apex = proj₁ lim-A
+    lim-FA-apex = proj₁ lim-FA
+    m = proj₂ (proj₂ lim-FA)
+
+    m′ = m (actf F lim-A-apex) {!!}
+
+    p : actf F lim-A-apex ⇒[ 𝔻 ] lim-FA-apex
+    p = {!!}
+  in
+  Category.Obj 𝔼
 
 -- Point : ∀ {o ℓ o₂ ℓ₂} {𝔻 : Category o ℓ} →
 --   Functor 𝔻 (Agda {o₂} {ℓ₂})
