@@ -1,7 +1,10 @@
 
 open import Category
-open import CategoryRecord hiding (o)
+import ElementaryProperties
+open import FunctorDefs
 open import Agda
+open import FunctorProperties
+
 open import Level
 open import Agda.Primitive
 
@@ -144,7 +147,7 @@ Rep-fmap Z f = λ x → lower (lower (Functor.fmap (Rep Z) f) x)
 --   }
 
 -- open Category.Category ℂop
-open CategoryProperties
+open ElementaryProperties
 open import Data.Product
 
 -- p : Functor ? ?

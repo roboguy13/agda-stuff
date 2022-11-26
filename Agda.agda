@@ -3,7 +3,8 @@
 -- {-# OPTIONS --cumulativity #-}
 
 open import Category
-open import CategoryRecord
+import ElementaryProperties
+open import FunctorDefs
 open import Agda.Primitive
 
 open import Level
@@ -79,7 +80,7 @@ Agda = record
 
 
 open Category.Category Agda
-open CategoryProperties Agda
+open ElementaryProperties Agda
 
 -- open import Axiom.Extensionality.Propositional
 

@@ -63,18 +63,18 @@ Functor-⊗′ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {�
 Functor-⊗′ _⊗_ product F G =
   Product-Functor _⊗_ product ∘F (Functor-⊗ F G)
 
-Functor-⊗′-proj₁ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
-  (_⊗_ : Category.Obj 𝔻 → Category.Obj 𝔻 → Category.Obj 𝔻) →
-  (product : ∀ X Y → ElementaryProperties.IsProduct 𝔻 X Y (X ⊗ Y)) →
-  (F G : Functor ℂ 𝔻) →
-  NatTrans (Functor-⊗′ _⊗_ product F G) (F ∘F ×cat-proj₁)
-Functor-⊗′-proj₁ {_} {_} {_} {_} {ℂ} {𝔻} _⊗_ product F G = {!!}
-  -- record
-  --   { component = λ x → {!!} ∘[ 𝔻 ] Functor.fmap (Functor-⊗′ _⊗_ product F G) {!!}
-  --               -- {!CategoryProperties.bimap _⊗_ product!} -- {!!} ∘[ 𝔻 ] Functor.fmap (Functor-⊗′ _⊗_ product F G) {!!}
-  --   -- { component = λ x → {!!} ∘[ 𝔻 ] {!!}
-  --   ; natural = {!!}
-  --   }
+-- Functor-⊗′-proj₁ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+--   (_⊗_ : Category.Obj 𝔻 → Category.Obj 𝔻 → Category.Obj 𝔻) →
+--   (product : ∀ X Y → ElementaryProperties.IsProduct 𝔻 X Y (X ⊗ Y)) →
+--   (F G : Functor ℂ 𝔻) →
+--   NatTrans (Functor-⊗′ _⊗_ product F G) (F ∘F ×cat-proj₁)
+-- Functor-⊗′-proj₁ {_} {_} {_} {_} {ℂ} {𝔻} _⊗_ product F G = {!!}
+--   -- record
+--   --   { component = λ x → {!!} ∘[ 𝔻 ] Functor.fmap (Functor-⊗′ _⊗_ product F G) {!!}
+--   --               -- {!CategoryProperties.bimap _⊗_ product!} -- {!!} ∘[ 𝔻 ] Functor.fmap (Functor-⊗′ _⊗_ product F G) {!!}
+--   --   -- { component = λ x → {!!} ∘[ 𝔻 ] {!!}
+--   --   ; natural = {!!}
+--   --   }
 
 -- ×cat-proj₁ : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} → Functor (ℂ ×cat 𝔻) ℂ
 -- ×cat-proj₁ {_} {_} {_} {_} {ℂ} {𝔻} =
