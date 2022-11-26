@@ -10,8 +10,9 @@ open import Relation.Binary.PropositionalEquality
 open import Level
 
 module AgdaHom
-  (ℓ : Level)
-  (ℂ : Category (suc ℓ) ℓ )
+  {o : Level}
+  {ℓ : Level}
+  (ℂ : Category o ℓ )
   -- (let _≈_ = Category._≈_ Eq-ℂ)
 
   -- (_≈ₒ_ : ∀ {m} {A : Set m} → A → A → Set m)

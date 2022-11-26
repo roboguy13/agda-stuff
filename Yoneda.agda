@@ -17,7 +17,7 @@ open CatBasics
 open Category.Category
 
 module Yoneda
-  (ℓ : Level)
+  {ℓ : Level}
   (ℂ : Category (suc ℓ) (ℓ))
   where
 
