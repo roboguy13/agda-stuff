@@ -1,6 +1,6 @@
 
 open import Category
-open import CategoryRecord
+open import CategoryRecord hiding (o)
 open import Agda
 open import Level
 open import Agda.Primitive
@@ -14,23 +14,23 @@ open CatBasics
 open Category.Category
 
 module Yoneda
-  (o ℓ : Level)
-  (ℂ : Category o ℓ)
+  (ℓ : Level)
+  (ℂ : Category (suc ℓ) (ℓ))
   where
 
 Agda' : Category (suc ℓ) ℓ
-Agda' = Agda
+Agda' = Agda {ℓ} {ℓ}
 
-ℂop : Category o ℓ
+ℂop : Category (suc ℓ) ℓ
 ℂop = Op ℂ
 
 Rep : (A : Category.Obj ℂop) → Functor ℂop Agda'
 Rep A =
   record
-  { act = λ X → (A ⇒[ ℂop ] X)
-  ; fmap′ = λ _ _ f → λ t → (f ∘[ ℂop ] t)
-  ; fmap-id′ = λ _ → (fun-ext λ x → Category.right-id ℂ)
-  ; fmap-∘′ = λ _ _ _ _ _ → (fun-ext (λ x → Category.∘-assoc ℂ))
+  { act = λ X → Lift ℓ (A ⇒[ ℂop ] X)
+  ; fmap′ = λ _ _ f → lift λ t → lift (f ∘[ ℂop ] lower t)
+  ; fmap-id′ = λ _ → cong lift (fun-ext λ x → cong lift (Category.right-id ℂ))
+  ; fmap-∘′ = λ _ _ _ _ _ → cong lift (fun-ext (λ x → cong lift (Category.∘-assoc ℂ)))
   }
 
 -- Corep : (A : Category.Obj ℂ) → Functor ℂ Agda'
@@ -43,73 +43,96 @@ Rep A =
 --   }
 
 
-よ : Functor ℂ [ ℂop ,, Agda' ]
+lower-Arr : ∀ {A B} →
+  (Lift ℓ A ⇒[ Agda' ] Lift ℓ B) →
+  (A ⇒[ Agda' ] B)
+lower-Arr f = lift λ x → lower (lower f (lift x))
+
+_∘[A]_ : ∀ {A B C} →
+  (Lift ℓ B ⇒[ Agda' ] Lift ℓ C) →
+  (Lift ℓ A ⇒[ Agda' ] Lift ℓ B) →
+  (A ⇒[ Agda' ] C)
+_∘[A]_ f g = (lower-Arr f ∘[ Agda' ] lower-Arr g)
+
+Rep-fmap : ∀ {A B} → (Z : Category.Obj ℂop) → (A ⇒[ ℂop ] B) → Functor.act (Rep Z) A → (Z ⇒[ ℂop ] B)
+Rep-fmap Z f = λ x → lower (lower (Functor.fmap (Rep Z) f) x)
+
+
+よ : Functor ℂ [ ℂop ,, Agda ]
 よ =
   record
     { act = λ x → Rep x
     ; fmap′ = λ A B f →
             record
-              { component = λ x x₁ → x₁ ∘[ ℂop ] f
+              { component = λ x → lift λ x₁ → lift (lower x₁ ∘[ ℂop ] f)
               ; natural = λ x y f₁ →
-                  fun-ext λ x₁ →
+                        cong lift
+                  (fun-ext λ x₁ →
                     let
-                      q : comp Agda' (λ x₂ → comp ℂop x₂ f) (Functor.fmap (Rep A) f₁) x₁
+                      -- rep-fmap = 
+                  --     q : comp Agda' (λ x₂ → comp ℂop x₂ f) (Functor.fmap (Rep A) f₁) x₁
+                      q : lower ((comp Agda' (lift (λ x₂ → comp ℂop x₂ f))) (lower-Arr (Functor.fmap (Rep A) f₁))) (lower x₁)
                                ≡
-                          (Functor.fmap (Rep A) f₁ x₁ ∘[ ℂop ] f)
+                          -- (lower (lower (Functor.fmap (Rep A) f₁) x₁) ∘[ ℂop ] f)
+                          (Rep-fmap A f₁ x₁ ∘[ ℂop ] f)
                       q = refl
 
-                      q2 : (Functor.fmap (Rep A) f₁ x₁ ∘[ ℂop ] f)
+                      q2 : (Rep-fmap A f₁ x₁ ∘[ ℂop ] f)
                                ≡
-                          ((f₁ ∘[ ℂop ] x₁) ∘[ ℂop ] f)
+                          ((f₁ ∘[ ℂop ] lower x₁) ∘[ ℂop ] f)
                       q2 = refl
 
 
-                      q3 : ((f₁ ∘[ ℂop ] x₁) ∘[ ℂop ] f)
+                      q3 : ((f₁ ∘[ ℂop ] lower x₁) ∘[ ℂop ] f)
                                ≡
-                           (f₁ ∘[ ℂop ] (x₁ ∘[ ℂop ] f))
+                           (f₁ ∘[ ℂop ] (lower x₁ ∘[ ℂop ] f))
                       q3 = ∘-assoc ℂop
                         --------------------
 
 
-                      w0 : (f₁ ∘[ ℂop ] (x₁ ∘[ ℂop ] f))
+                      w0 : (f₁ ∘[ ℂop ] (lower x₁ ∘[ ℂop ] f))
                                 ≡
-                           (Functor.fmap (Rep B) f₁ (x₁ ∘[ ℂop ] f))
+                           (Rep-fmap B f₁ (lift (lower x₁ ∘[ ℂop ] f)))
+                           -- (Rep-fmap B f₁ (lower {!!}))
                       w0 = refl
 
-                      w : (Functor.fmap (Rep B) f₁ (x₁ ∘[ ℂop ] f))
+                      w : (Rep-fmap B f₁ (lift (lower x₁ ∘[ ℂop ] f)))
                                ≡
-                          (comp Agda' (Functor.fmap (Rep B) f₁) (λ x₂ → comp ℂop x₂ f) x₁)
+                          lower (lower (comp Agda' (Functor.fmap (Rep B) f₁) (lift (λ x₂ → lift (comp ℂop x₂ f)))) (lower x₁))
                       w = refl
                     in
-                    trans q (trans q2 (trans q3 (trans w0 w)))
+                    -- {!!}
+                    trans (cong lift q) (trans (cong lift q2) (trans (cong lift q3) (trans (cong lift w0) (cong lift w))))
+                    )
               }
-    ; fmap-id′ = λ A → NatTrans-η (fun-ext λ x → fun-ext λ y → left-id ℂ)
-    ; fmap-∘′ = λ A B C f g → NatTrans-η (fun-ext λ x → fun-ext λ y →
+    ; fmap-id′ = λ A → NatTrans-η (fun-ext λ x → cong lift (fun-ext λ y → cong lift (left-id ℂ)))
+    -- ; fmap-id′ = λ A → NatTrans-η (fun-ext λ x → fun-ext λ y → left-id ℂ)
+    ; fmap-∘′ = λ A B C f g → NatTrans-η (fun-ext λ x → cong lift (fun-ext λ y →
         let
           α : NatTrans (Rep B) (Rep C)
           α = (record
-                    { component = λ x₁ x₂ → comp ℂop x₂ f
-                    ; natural = λ x₁ y₁ f₁ → fun-ext (λ x₂ → trans (∘-assoc ℂop) refl)
+                    { component = λ x₁ → lift λ x₂ → lift (comp ℂop (lower x₂) f)
+                    ; natural = λ x₁ y₁ f₁ → cong lift (fun-ext (λ x₂ → trans (cong lift (∘-assoc ℂop)) refl))
                     })
 
           β : NatTrans (Rep A) (Rep B)
           β = (record
-                    { component = λ x₁ x₂ → comp ℂop x₂ g
-                    ; natural = λ x₁ y₁ f₁ → fun-ext (λ x₂ → trans (∘-assoc ℂop) refl)
+                    { component = λ x₁ → lift λ x₂ → lift (comp ℂop (lower x₂) g)
+                    ; natural = λ x₁ y₁ f₁ → cong lift (fun-ext (λ x₂ → trans (cong lift (∘-assoc ℂop)) refl))
                     })
-          p : NatTrans.component
-                (comp [ ℂop ,, Agda' ] α β) x y
+          p : lower (NatTrans.component
+                (comp [ ℂop ,, Agda' ] α β) x) y
                   ≡
-              comp ℂop (comp ℂop y g) f
+              lift (comp ℂop (comp ℂop (lower y) g) f)
           p = refl
 
           q0 : ∀ {A′ B′ C′} {u : A′ ⇒[ ℂ ] B′} {v : B′ ⇒[ ℂ ] C′} → comp ℂop u v ≡ comp ℂ v u
           q0 = refl
 
-          q : comp ℂ f  (comp ℂ g  y) ≡ comp ℂop y (comp ℂ f g)
+          q : comp ℂ f  (comp ℂ g  (lower y)) ≡ comp ℂop (lower y) (comp ℂ f g)
           q = trans (sym (∘-assoc ℂ)) (sym q0)
         in
-        trans p q)
+        trans p (cong lift q)))
     }
 
 -- よ : (A : Category.Obj ℂop) → Functor ℂop (Agda ℓ ℓ ℓ)
@@ -120,13 +143,32 @@ Rep A =
 --   ; fmap-∘ = lift (fun-ext ℓ ℓ ℓ (λ x → Eq-Category.∘-assoc ℂ))
 --   }
 
-open Category.Category ℂop
+-- open Category.Category ℂop
 open CategoryProperties
 open import Data.Product
 
-よ-× : ∀ (A B : Category.Obj ℂop) →
-  IsProduct [ ℂop ,, Agda' ] (actf よ A) (actf よ B) (actf (Product-Functor [ ℂop ,, Agda' ] {!!} {!!}) {!!})
-よ-× = {!!}
+-- p : Functor ? ?
+-- p A B = 
+
+Agda-Product : ∀ (A B : Category.Obj ℂop) → Functor ℂ ([ ℂop ,, Agda ] ×cat [ ℂop ,, Agda ])
+-- Agda-Product A B = (Product-Functor {_} {_} {Agda'} _×_ ×-IsProduct)
+-- Agda-Product A B = ((Functor-⊗ (actf よ A) (actf よ B)))
+-- Agda-Product A B = ((Product-Functor {_} {_} {Agda'} _×_ ×-IsProduct ∘F Functor-⊗ (actf よ A) (actf よ B)) ∘F {!!}) --(FΔ ∘F {!!}))
+-- Agda-Product A B = ((Product-Functor {_} {_} {{!!}} _×_ ×-IsProduct ∘F Functor-⊗ (Rep A) (Rep B)) ∘F Functor-⊗ {!!} {!!}) --(FΔ ∘F {!!}))
+Agda-Product A B = Functor-⊗ よ よ ∘F FΔ
+
+Agda-Product′ : ∀ (A B : Category.Obj ℂop) → Functor {!!} {!!}
+Agda-Product′ A B = Product-Functor {_} {_} {[ {!!} ,, {!!} ]} (Functor-⊗′ _×_ ×-IsProduct) {!!} ∘F {!!}
+
+
+-- よ-× : ∀ (A B : Category.Obj ℂop) →
+--   -- IsProduct [ ℂop ,, Agda' ] (actf よ A) (actf よ B) (actf (Product-Functor [ ℂop ,, Agda' ] {!!} {!!}) {!!})
+--   IsProduct [ ℂop ,, Agda' ] (actf よ A) (actf よ B) 
+-- よ-× A B =
+--   let
+--     p = ?
+--   in
+--   {!!}
 
 -- ×-canon-proj₁-eq : ∀ {A B X : Set (o ⊔ ℓ)} {f : X → A} {g : X → B} →
 --   f ≡ (proj₁ ∘[ Agda' ] (λ x → f x , g x))
