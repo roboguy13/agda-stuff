@@ -68,7 +68,7 @@ Interval-Cat =
 -- Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (lsuc o Level.⊔ lsuc ℓ Level.⊔ lsuc lzero) (lsuc lzero Level.⊔ lsuc lzero Level.⊔ lsuc o Level.⊔ lsuc ℓ)
 -- Arrow-Cat ℂ = [ Interval-Cat ,, ℂ ]
 
-Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category {!!} {!!}
+Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (o ⊔ ℓ) ℓ
 Arrow-Cat {o} {ℓ} ℂ =
   record
     { Obj = Obj₀
@@ -76,7 +76,7 @@ Arrow-Cat {o} {ℓ} ℂ =
     ; _∘_ = ∘-def
     ; id = (Category.id ℂ , Category.id ℂ) , trans (Category.right-id ℂ) (sym (Category.left-id ℂ))
     ; left-id = left-id-def
-    ; right-id = {!!}
+    ; right-id = right-id-def
     ; ∘-assoc = ∘-assoc-def
     }
     where
@@ -143,6 +143,39 @@ Arrow-Cat {o} {ℓ} ℂ =
 
         in
         Inverse.f Σ-≡,≡↔≡ (p1 , (uip p-left (proj₂ f)))
+
+      right-id-def : ∀ {A B : Obj₀} {f : A ⇒₀ B} →
+                    ∘-def f
+                    ((Category.id ℂ , Category.id ℂ) ,
+                    trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
+                    ≡ f
+      right-id-def {A} {B} {f} =
+        let
+            f1 = proj₁ (proj₁ f)
+            f2 = proj₂ (proj₁ f)
+
+            ∘-app = ∘-def f ((Category.id ℂ , Category.id ℂ) ,
+                      trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
+                      -- f
+
+            p : ∘-app ≡ (((Category.id ℂ ∘[ ℂ ] f1) , (Category.id ℂ ∘[ ℂ ] f2)) ,
+                   ElementaryProperties.CSquare-vert-comp ℂ
+                     (proj₂ f)
+                     (trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
+                  )
+            p = refl
+
+            p′ : ∀ {X Y X′ Y′} {h : X ⇒[ ℂ ] Y} {h′ : X′ ⇒[ ℂ ] Y′} → ((Category.id ℂ ∘[ ℂ ] h) , (Category.id ℂ ∘[ ℂ ] h′)) ≡ (h , h′)
+            p′ = Inverse.f ×-≡,≡↔≡ (Category.left-id ℂ , Category.left-id ℂ)
+
+            p1 : proj₁ ∘-app
+                  ≡ proj₁ f
+            p1 =
+               let z , _ = Inverse.f⁻¹ Σ-≡,≡↔≡ p
+               in
+               trans z (trans p′ refl)
+        in
+        Inverse.f Σ-≡,≡↔≡ (p1 , (uip _ (proj₂ f)))
 
       ∘-assoc-def : ∀ {A B C D : Obj₀} {f : C ⇒₀ D} {g : B ⇒₀ C} {h : A ⇒₀ B} →
             ∘-def (∘-def f g) h ≡ ∘-def f (∘-def g h)
