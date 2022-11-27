@@ -80,7 +80,6 @@ Arrow-Cat {o} {ℓ} ℂ =
     ; ∘-assoc = ∘-assoc-def
     }
     where
-      -- Obj₀ = Σ (Category.Obj ℂ) λ A → Σ (Category.Obj ℂ) λ B → (A ⇒[ ℂ ] B)
       Obj₀ : Set (o Level.⊔ ℓ)
       Obj₀ = Σ (Category.Obj ℂ × Category.Obj ℂ) λ (A , B) →  (A ⇒[ ℂ ] B)
 
@@ -96,7 +95,6 @@ Arrow-Cat {o} {ℓ} ℂ =
           t = f ∘[ ℂ ] p
         in
         (t , s) , ElementaryProperties.CSquare-vert-comp ℂ snd snd₁
-
 
       left-id-def : {A B : Obj₀} {f : A ⇒₀ B} →
                     ∘-def ((Category.id ℂ , Category.id ℂ),
@@ -367,8 +365,8 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
     p : actf F lim-A-apex ⇒[ 𝔻 ] lim-FA-apex
     p = x
   in
-  ⊤
-  -- ElementaryProperties.Is-Iso Agda p {!!}
+  ∃[ p⁻¹ ]
+    (ElementaryProperties.Iso 𝔻 p p⁻¹)
 
 -- Point : ∀ {o ℓ o₂ ℓ₂} {𝔻 : Category o ℓ} →
 --   Functor 𝔻 (Agda {o₂} {ℓ₂})
