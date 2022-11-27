@@ -307,6 +307,45 @@ IsPullback A B X f g P p₁ p₂ =
         ×
       ((p₂ ∘ m) ≡ p₂′))
 
+--      p2     p2′
+--    P -> B  ---> B'
+-- p1 |    | g     | g'
+--    v    v       |
+--    A -> X  ---> X'
+--      f      f′
+CSquare-horiz-comp : ∀ {A B B′ X X′ P} → {f : A ⇒ X} {g : B ⇒ X} →
+  {p₁ : P ⇒ A} → {p₂ : P ⇒ B} →
+  {p₂′ : B ⇒ B′} → {f′ : X ⇒ X′} →
+  {g′ : B′ ⇒ X′} →
+  CSquare f g p₁ p₂ →
+  CSquare f′ g′ g p₂′ →
+  CSquare (f′ ∘ f) g′ p₁ (p₂′ ∘ p₂)
+CSquare-horiz-comp S1 S2 =
+  trans (trans ∘-assoc (trans (rewrite-right-∘ (sym S1) refl) (trans (sym ∘-assoc) (sym (rewrite-left-∘ S2 refl))) )) ∘-assoc
+
+--       p2
+--     P ---> B
+-- p1  |      | g
+--     v  f   v
+--     A ---> X
+-- p1′ |      | g′
+--     v      v
+--     A′---> X′
+--        f′
+CSquare-vert-comp : ∀ {A A′ B X X′ P} → {f : A ⇒ X} {g : B ⇒ X} →
+  {p₁ : P ⇒ A} → {p₂ : P ⇒ B} →
+  {p₁′ : A ⇒ A′} → {g′ : X ⇒ X′} →
+  {f′ : A′ ⇒ X′} →
+  CSquare f g p₁ p₂ →
+  CSquare f′ g′ p₁′ f →
+  CSquare f′ (g′ ∘[ ℂ ] g) (p₁′ ∘ p₁) p₂
+CSquare-vert-comp S1 S2 =
+  trans (trans (sym ∘-assoc) (rewrite-left-∘ (sym S2) refl))
+    (trans (sym (rewrite-right-∘ S1 (sym ∘-assoc)))
+      (sym ∘-assoc))
+
+
+
 
 --      !
 --   A --> 𝟙
