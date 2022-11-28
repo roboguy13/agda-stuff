@@ -10,6 +10,64 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 module FunctorProperties
   where
 
+
+-- F(A, -)
+F-Left : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} → {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₃ ℓ₃} →
+  Functor (ℂ ×cat 𝔻) 𝔼 →
+  Category.Obj ℂ →
+  Functor 𝔻 𝔼
+F-Left {_} {_} {_} {_} {_} {_} {ℂ} {𝔻} {𝔼} F A =
+  record
+    { act = λ B → actf F (A , B)
+    ; fmap′ = λ B C f → Functor.fmap F (Category.id ℂ , f)
+    ; fmap-id′ = λ B → Functor.fmap-id F
+    ; fmap-∘′ = λ B C D f g →
+              let
+                p : ∀ {T} →
+                    comp 𝔼 (Functor.fmap F (Category.id ℂ {T} , f)) (Functor.fmap F (Category.id ℂ , g))
+                    ≡ Functor.fmap F (Category.id ℂ ∘[ ℂ ] Category.id ℂ , comp 𝔻 f g)
+                p = Functor.fmap-∘ F
+
+                q : ∀ {T} →
+                    Functor.fmap F (Category.id ℂ {T} ∘[ ℂ ] Category.id ℂ , comp 𝔻 f g)
+                    ≡
+                    Functor.fmap F (Category.id ℂ , comp 𝔻 f g)
+                q =
+                  cong (λ z → Functor.fmap F (z , comp 𝔻 f g))
+                    (Category.left-id ℂ)
+              in
+              trans p q
+    }
+
+-- F(-, B)
+F-Right : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} → {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₃ ℓ₃} →
+  Functor (ℂ ×cat 𝔻) 𝔼 →
+  Category.Obj 𝔻 →
+  Functor ℂ 𝔼
+F-Right {_} {_} {_} {_} {_} {_} {ℂ} {𝔻} {𝔼} F B =
+  record
+    { act = λ A → actf F (A , B)
+    ; fmap′ = λ B C f → Functor.fmap F (f , Category.id 𝔻)
+    ; fmap-id′ = λ B → Functor.fmap-id F
+    ; fmap-∘′ = λ B C D f g →
+              let
+                p : ∀ {T} →
+                    comp 𝔼 (Functor.fmap F (f , Category.id 𝔻 {T})) (Functor.fmap F (g , Category.id 𝔻))
+                    ≡ Functor.fmap F (comp ℂ f g , Category.id 𝔻 ∘[ 𝔻 ] Category.id 𝔻)
+                p = Functor.fmap-∘ F
+
+                q : ∀ {T} →
+                    Functor.fmap F (comp ℂ f g , Category.id 𝔻 {T} ∘[ 𝔻 ] Category.id 𝔻)
+                    ≡
+                    Functor.fmap F (comp ℂ f g , Category.id 𝔻)
+                q =
+                  cong (λ z → Functor.fmap F (comp ℂ f g , z))
+                    (Category.left-id 𝔻)
+              in
+              trans p q
+    }
+
+
 Is-NatIso : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   (F G : Functor ℂ 𝔻) →
   NatTrans F G →
