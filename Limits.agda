@@ -148,3 +148,24 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
   in
   ∃[ p⁻¹ ]
     (ElementaryProperties.Iso 𝔻 p p⁻¹)
+
+よ-Is-Continuous : ∀ {ℓ} {ℂ : Category (lsuc ℓ) ℓ} → Is-Continuous (よ ℂ)
+よ-Is-Continuous {ℓ} {ℂ} 𝔼 A lim-A lim-よA =
+  let
+    lim-A-apex = proj₁ lim-A
+    lim-よA-apex = proj₁ lim-よA
+    m = proj₂ (proj₂ lim-よA)
+
+    cone : Cone A lim-A-apex
+    cone = proj₁ (proj₂ lim-A)
+
+    x , y = m (actf (よ ℂ) lim-A-apex) (Cone-∘ (よ ℂ) cone)
+
+    p : actf (よ ℂ) lim-A-apex ⇒[ ([ Op ℂ ,, Agda ]) ] lim-よA-apex
+    p = x
+
+    p⁻¹ : lim-よA-apex ⇒[ ([ Op ℂ ,, Agda ]) ] actf (よ ℂ) lim-A-apex
+    p⁻¹ = {!!}
+  in
+  p⁻¹ , {!!}
+  -- {!!} , {!!}

@@ -149,6 +149,18 @@ record NatTrans {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {
         ≡
       (Functor.fmap G f ∘[ Tgt ] component x)
 
+-- Param-Functor : ∀ {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂} →
+ 
+
+-- NatTrans′ : ∀ {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂} →
+--   (Category.Obj Src → (Functor Src Tgt × Functor Src Tgt)) →
+--   Set {!!} -- NatTrans {!!} {!!}
+-- NatTrans′ P = {!!}
+  -- record
+  --   { component = {!!}
+  --   ; natural = {!!}
+  --   }
+
 NatTrans-η : ∀ {o₁ ℓ₁ o₂ ℓ₂ : Level} {Src : Category o₁ ℓ₁} {Tgt : Category o₂ ℓ₂}
   {F G : Functor Src Tgt}
   {α β : NatTrans F G} →

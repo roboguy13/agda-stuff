@@ -51,6 +51,12 @@ Hom :
   Category.Obj Agda′
 Hom A B = A ⇒[ ℂ ] B
 
+unlift-eq : ∀ {m} {n} {A : Set m} →
+  {x y : A} →
+  lift {_} {n} x ≡ lift {_} {n} y →
+  x ≡ y
+unlift-eq refl = refl
+
 infixr 9 _∘[Hom]_
 _∘[Hom]_ :
   ∀ {A B C} →
@@ -115,6 +121,82 @@ Hom-F =
            in
            (trans eq1 (cong lift eq2))
   }
+
+-- Hom(A, -)
+Hom-Left : ∀ (A : Category.Obj (Op ℂ)) → Functor ℂ Agda
+Hom-Left A =
+  record
+    { act = Hom A
+    ; fmap′ = λ B C f → Functor.fmap Hom-F (Category.id ℂ , f)
+    ; fmap-id′ = λ B → Functor.fmap-id Hom-F
+    ; fmap-∘′ = λ B C D f g →
+              let
+                p {T} = Functor.fmap-∘′ Hom-F (T , _) (_ , _) (_ , _) (Category.id ℂ , f) (Category.id ℂ , g)
+
+                p′ : ∀ {T} → (λ z → comp ℂ {T} {_} {_} f ((g ∘ z ∘ id) ∘ id)) ≡
+                     (λ g₁ →
+                         proj₂ (comp (Op ℂ ×cat ℂ) {(B , _)} {_} {_} (id , f) (id , g)) ∘
+                         g₁ ∘ proj₁ (comp (Op ℂ ×cat ℂ) (id , f) (id , g)))
+                p′ = unlift-eq p
+
+                f-eq : Functor.fmap Hom-F (id {A} , f) ≡ lift λ h → f ∘ h ∘ id
+                f-eq = refl
+
+                g-eq : Functor.fmap Hom-F (id {B} , g) ≡ lift λ h → g ∘ h ∘ id
+                g-eq = refl
+
+                w1 : ∀ {T} → (Functor.fmap Hom-F (id {T} , f)) ∘[ Agda′ ] (Functor.fmap Hom-F (id {T} , g)) ≡ lift (λ h → f ∘ (g ∘ h ∘ id) ∘ id)
+                w1 = refl
+
+                w1′ : ∀ {m} {T} → lift {_} {m} (λ h → comp ℂ {T} {_} {_} f ((g ∘ h ∘ id) ∘ id)) ≡ lift (λ h → f ∘ (g ∘ h))
+                w1′ = cong lift (fun-ext λ z → trans (CatBasics.rewrite-right-∘ ℂ (sym right-id) refl) (CatBasics.rewrite-right-∘ ℂ (CatBasics.rewrite-right-∘ ℂ right-id refl) refl))
+
+                w1′′ : ∀ {n} {T} → lift {_} {n} (λ h → f ∘ (comp ℂ g h)) ≡ lift (λ h → (f ∘ g) ∘ (comp ℂ {T} {_} {_} h id)) 
+                w1′′ = cong lift (fun-ext λ z → trans (sym ∘-assoc) (sym (CatBasics.rewrite-right-∘ ℂ (sym right-id) refl)))
+
+                w2 : ∀ {T} → lift (λ h → (f ∘ g) ∘ (comp ℂ {T} {_} {_} h id)) ≡ Functor.fmap Hom-F (id , comp ℂ f g)
+                w2 = refl
+              in
+              trans w1 (trans w1′ (trans w1′′ w2))
+    }
+
+-- Hom(-, B)
+Hom-Right : ∀ (B : Category.Obj ℂ) → Functor (Op ℂ) Agda′
+Hom-Right B =
+  record
+    { act = λ A → Hom A B
+    ; fmap′ = λ B C f → Functor.fmap Hom-F (f , Category.id ℂ)
+    ; fmap-id′ = λ B → Functor.fmap-id Hom-F
+    ; fmap-∘′ = λ A C D f g →
+              let
+                p {T} = Functor.fmap-∘′ Hom-F (_ , T) (_ , _) (_ , _) (f , Category.id ℂ) (g , Category.id ℂ)
+                p′ : ∀ {T} →
+                     (λ z → comp ℂ {_} {T} id ((id ∘ z ∘ g) ∘ f)) ≡
+                     (λ g₁ →
+                         proj₂ (comp (Op ℂ ×cat ℂ) (f , id) (g , id)) ∘
+                         g₁ ∘ proj₁ (comp (Op ℂ ×cat ℂ) {(_ , T)} {(_ , _)} {(_ , _)} (f , id) (g , id)))
+                p′ = unlift-eq p
+
+                f-eq : Functor.fmap Hom-F (f , id {B}) ≡ lift λ h → id ∘ (h ∘ f)
+                f-eq = refl
+
+                g-eq : Functor.fmap Hom-F (g , id {A}) ≡ lift λ h → id ∘ h ∘ g
+                g-eq = refl
+
+                w1 : ∀ {T} → (Functor.fmap Hom-F (f , id {T})) ∘[ Agda′ ] (Functor.fmap Hom-F (g , id {T})) ≡ lift (λ h → id ∘ (id ∘ h ∘ g) ∘ f)
+                w1 = refl
+
+                w1′ : ∀ {m} {T} → lift {_} {m} (λ h → comp ℂ {_} {T} {_} id ((id ∘ h ∘ g) ∘ f)) ≡ lift (λ h → h ∘ (g ∘ f))
+                w1′ = cong lift (fun-ext λ z → trans left-id (trans ∘-assoc (trans left-id ∘-assoc)))
+
+                w1′′ : ∀ {n} {T} → lift {_} {n} (λ h → comp ℂ {_} {_} {T} h (comp ℂ {_} {_} {_} g f)) ≡ lift (λ h → id ∘ (h ∘ g) ∘ f)
+                w1′′ = cong lift (fun-ext λ z → trans (sym ∘-assoc) (sym left-id))
+
+                w2 : ∀ {T} → lift (λ h → (comp ℂ {_} {T} {_} id ((h ∘ g) ∘ f))) ≡ Functor.fmap Hom-F (comp (Op ℂ) f g , id)
+                w2 = cong lift (trans (fun-ext λ x → left-id) (fun-ext λ y → trans ∘-assoc (sym left-id)))
+              in
+              trans w1 (trans w1′ (trans w1′′ w2))
+    }
 
 
 Hom-Initial :
