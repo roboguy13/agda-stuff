@@ -23,6 +23,8 @@ open import Relation.Binary.HeterogeneousEquality hiding (cong; cong₂) renamin
 
 open import Axiom.UniquenessOfIdentityProofs.WithK
 
+open import ArrowCat
+
 module Limits
   where
 
@@ -48,32 +50,63 @@ Cone-∘ {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} {𝔻} {𝔼} {F} {c} G cone =
      NT-id
    )
 
-mk-Cone : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₃ ℓ₃} →
+map-Cone : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   {F : Functor ℂ 𝔻} →
   {c c′ : Category.Obj 𝔻} →
   (c′ ⇒[ 𝔻 ] c) →
   Cone F c →
   Cone F c′
-mk-Cone {_} {_} {_} {_} {_} {_} {ℂ} {𝔻} {𝔼} {F} {c} {c′} f cone =
+map-Cone {_} {_} {_} {_} {ℂ} {𝔻}  {F} {c} {c′} f cone =
   cone ∘NT lift-to-NT f
+
+-- lift-Cone : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+--   {F : Functor ℂ 𝔻} →
+--   {c : Category.Obj 𝔻} →
+
+-- Cone-lift : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+--   (F : Functor ℂ 𝔻) →
+--   (c : Category.Obj 𝔻) →
+--   Cone F c
+-- Cone-lift F c =
+--   record
+--     { component = λ x → {!!}
+--     ; natural = {!!}
+--     }
 
 Cone-cat : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   (F : Functor ℂ 𝔻) →
-  Category {!!} {!!}
-Cone-cat F =
+  (c : Category.Obj 𝔻) →
+  Category (o₁ ⊔ o₁ ⊔ ℓ₂) ℓ₂
+Cone-cat {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} {𝔻} F c =
+  (Const-Functor {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} {𝔻} c)
+    ↓
+  F
+
+Cone-cat-2 : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+  (F : Functor ℂ 𝔻) →
+  Category (lsuc o₁ ⊔ lsuc ℓ₁ ⊔ lsuc o₂ ⊔ lsuc ℓ₂) ℓ₂
+Cone-cat-2 {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} {𝔻} F =
   record
-    { Obj = ∃[ c ] (Cone F c)
-    ; _⇒_ = λ (x₁ , x₂) (y₁ , y₂) → {!!}
-    ; _∘_ = {!!}
-    ; id = {!!}
-    ; left-id = {!!}
-    ; right-id = {!!}
-    ; ∘-assoc = {!!}
+    { Obj = ∃[ c ](Cone F c)
+    ; _⇒_ = λ (c , x) (c′ , y) → (c ⇒[ Op 𝔻 ] c′)
+    -- ; _⇒_ = λ (x , (c , f)) (y , (c′ , g)) → (x ⇒[ Op 𝔻 ] y) -- × {!!}
+    ; _∘_ = λ f g → f ∘[ Op 𝔻 ] g
+    ; id = λ {A} → Category.id (Op 𝔻)
+    ; left-id = Category.left-id (Op 𝔻)
+    ; right-id = Category.right-id (Op 𝔻)
+    ; ∘-assoc = Category.∘-assoc (Op 𝔻)
     }
 
--- Cone-F : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₁ ℓ₁} →
---   {F : Functor ℂ 𝔻} →
---   Functor 𝔻 (Cone F)
+-- Cone-F : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+--   (F : Functor ℂ 𝔻) →
+--   Functor (Op ℂ) (Cone-cat-2 F)
+-- Cone-F {_} {_} {_} {_} {ℂ} {𝔻} F =
+--   record
+--     { act = λ x → actf F x , {!!}
+--     ; fmap′ = λ A B f → Functor.fmap F f
+--     ; fmap-id′ = Functor.fmap-id′ F
+--     ; fmap-∘′ = λ A B C f g → Functor.fmap-∘′ F C B A g f
+--     }
 
 ACone : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   (F : Functor ℂ 𝔻) →
@@ -153,7 +186,7 @@ Fin-Cat-Functor {_} {_} {ℂ} {n} fn =
 
 Is-Continuous : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   Functor ℂ 𝔻 →
-  Set {!!}
+  Set (lsuc o₁ ⊔ lsuc ℓ₁ ⊔ lsuc o₂ ⊔ lsuc ℓ₂)
 Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
   (𝔼 : Category o₂ ℓ₂) →
   (A : Functor 𝔼 ℂ) →
@@ -174,11 +207,6 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
 
     p : actf F lim-A-apex ⇒[ 𝔻 ] lim-FA-apex
     p = x
-
-
-    -- r = proj₂ (proj₂ lim-A) lim-A-apex cone
-    -- z = proj₁ r
-
   in
   ∃[ p⁻¹ ]
     (ElementaryProperties.Iso 𝔻 p p⁻¹)
@@ -191,6 +219,9 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
 
     lim-よA-apex : Category.Obj [ Op ℂ ,, Agda ]
     lim-よA-apex = proj₁ lim-よA
+
+    lim-A-cone , lim-A-universal = proj₂ lim-A
+    lim-よA-cone , lim-よA-universal = proj₂ lim-よA
 
     m = proj₂ (proj₂ lim-よA)
     m′ = proj₂ (proj₂ lim-A)
@@ -207,10 +238,11 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
     よ-A : Functor 𝔼 [ Op ℂ ,, Agda ]
     よ-A = (よ ℂ ∘F A)
 
-    cone-よ : Cone よ-A lim-よA-apex
+    -- cone-よ : Cone よ-A lim-よA-apex
+    cone-よ : NatTrans (Const-Functor lim-よA-apex) (よ ℂ ∘F A)
     cone-よ = proj₁ (proj₂ lim-よA)
 
-    x₀′ , _ = m′ {!!} {!!}
+    -- x₀′ , _ = m′ {!!} {!!}
 
     -- x′ : NatTrans lim-よA-apex lim-よA-apex
     -- x′ = x₀′
@@ -221,33 +253,55 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
     -- p⁻¹ : NatTrans lim-よA-apex (actf (よ ℂ) lim-A-apex)
     -- p⁻¹ = {!!}
 
-    -- q₀ , _ = proj₂ (proj₂ lim-A) {!!} {!!}
+    q₀ , _ = proj₂ (proj₂ lim-A) lim-A-apex cone
 
+    -- h : Functor (Op ℂ) Agda → Category.Obj ℂ
+    -- h = lower (Functor.fmap lim-よA-apex q₀) {!!}
+    h = (Functor.fmap lim-よA-apex q₀)
+
+    -- x2 , y2 = m′ {!!} {!!}
     -- p⁻¹ : lim-よA-apex ⇒[ ([ Op ℂ ,, Agda ]) ] actf (よ ℂ) lim-A-apex
     p⁻¹ : NatTrans lim-よA-apex (actf (よ ℂ) lim-A-apex)
-    p⁻¹ =
-      record
-        { component = λ x₁ → lift (λ x₂ →
-                    let
-                      ty = lim-よA-apex
-                      x₂′ : actf lim-よA-apex x₁
-                      x₂′ = x₂
+    p⁻¹ = -- _∘WL_ {lsuc ℓ} {ℓ} {lsuc ℓ} {ℓ} {{!!}} {{!!}} {Op ℂ} {Op ℂ} {Agda} {Id-Functor} (H {?}) NT-id
+      {!!}
+      -- record
+      --   { component = λ x₁ → lift (λ x₂ →
+      --               let
+      --                 ty = lim-よA-apex
+      --                 x₂′ : actf lim-よA-apex x₁
+      --                 x₂′ = x₂
 
-                      p′ = NatTrans.component p x₁
+      --                 p′ = NatTrans.component p x₁
+      --                 -- z = Functor.fmap (よ ℂ) {!!}
 
-                      m1 = m (actf (よ ℂ) x₁) {!!} --x₂
+      --                 cone′ : Cone A x₁
+      --                 cone′ =
+      --                   record
+      --                     { component = -- λ x₃ → (lower (Functor.fmap {_} {_} {_} {_} {{!!}} {Agda} (Const-Functor {!!}) {{!!}} {{!!}} (actf {{!!}} A x₃)) {!!})
+      --                           λ z → {!!}
+      --                     ; natural = {!!}
+      --                     }
 
-                      test : Lift ℓ (Arr (ℂop ℂ) (proj₁ lim-A) x₁)
-                      test = lift {!!}
+      --                 -- w = Functor.fmap lim-よA-apex {!!}
 
-                      w′ : Functor.act (actf (よ ℂ) (proj₁ lim-A)) x₁
-                      w′ = test
+      --                 m-A , _ = proj₂ (proj₂ lim-A) x₁ {!!}
 
-                      w = lower (Functor.fmap (actf (よ ℂ) (proj₁ lim-A)) (Category.id (Op ℂ))) {!!} -- (Functor.fmap (actf (よ ℂ) (proj₁ lim-A)) {!!})
-                    in
-                    w)
-        ; natural = λ x₁ y₁ f → {!!}
-        }
+      --                 cone′′ : Cone (よ ℂ ∘F A) (actf (よ ℂ) x₁)
+      --                 cone′′ = Cone-∘ (よ ℂ) cone′
+
+      --                 m1 = m (actf (よ ℂ) x₁) cone′′ -- (Cone-∘ (よ ℂ) {!!}) --x₂
+
+      --                 test : Lift ℓ (Arr (ℂop ℂ) (proj₁ lim-A) x₁)
+      --                 test = lift {!!}
+
+      --                 w′ : Functor.act (actf (よ ℂ) (proj₁ lim-A)) x₁
+      --                 w′ = test
+
+      --                 w = lower (Functor.fmap (actf (よ ℂ) (proj₁ lim-A)) (Category.id (Op ℂ))) {!!} -- (Functor.fmap (actf (よ ℂ) (proj₁ lim-A)) {!!})
+      --               in
+      --               w)
+      --   ; natural = λ x₁ y₁ f → {!!}
+      --   }
   in
   {!!}
   -- p⁻¹ , {!!} , {!!}

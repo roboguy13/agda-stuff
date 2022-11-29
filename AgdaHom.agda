@@ -152,6 +152,42 @@ Hom-Const : ∀ {𝟙} → IsTerminal 𝟙 →
   Hom A B
 Hom-Const {𝟙} 𝟙-terminal {A} {B} b = b ∘[Hom] (Hom-Terminal 𝟙-terminal)
 
+-- Hom-Left : ∀ (A : Category.Obj (Op ℂ)) → Functor ℂ Agda
+-- Hom-Left A =
+--   record
+--     { act = Hom A
+--     ; fmap′ = λ B C f → Functor.fmap Hom-F (Category.id ℂ , f)
+--     ; fmap-id′ = λ B → Functor.fmap-id Hom-F
+--     ; fmap-∘′ = λ B C D f g →
+--               let
+--                 p {T} = Functor.fmap-∘′ Hom-F (T , _) (_ , _) (_ , _) (Category.id ℂ , f) (Category.id ℂ , g)
+
+--                 p′ : ∀ {T} → (λ z → comp ℂ {T} {_} {_} f ((g ∘ z ∘ id) ∘ id)) ≡
+--                      (λ g₁ →
+--                          proj₂ (comp (Op ℂ ×cat ℂ) {(B , _)} {_} {_} (id , f) (id , g)) ∘
+--                          g₁ ∘ proj₁ (comp (Op ℂ ×cat ℂ) (id , f) (id , g)))
+--                 p′ = unlift-eq p
+
+--                 f-eq : Functor.fmap Hom-F (id {A} , f) ≡ lift λ h → f ∘ h ∘ id
+--                 f-eq = refl
+
+--                 g-eq : Functor.fmap Hom-F (id {B} , g) ≡ lift λ h → g ∘ h ∘ id
+--                 g-eq = refl
+
+--                 w1 : ∀ {T} → (Functor.fmap Hom-F (id {T} , f)) ∘[ Agda′ ] (Functor.fmap Hom-F (id {T} , g)) ≡ lift (λ h → f ∘ (g ∘ h ∘ id) ∘ id)
+--                 w1 = refl
+
+--                 w1′ : ∀ {m} {T} → lift {_} {m} (λ h → comp ℂ {T} {_} {_} f ((g ∘ h ∘ id) ∘ id)) ≡ lift (λ h → f ∘ (g ∘ h))
+--                 w1′ = cong lift (fun-ext λ z → trans (CatBasics.rewrite-right-∘ ℂ (sym right-id) refl) (CatBasics.rewrite-right-∘ ℂ (CatBasics.rewrite-right-∘ ℂ right-id refl) refl))
+
+--                 w1′′ : ∀ {n} {T} → lift {_} {n} (λ h → f ∘ (comp ℂ g h)) ≡ lift (λ h → (f ∘ g) ∘ (comp ℂ {T} {_} {_} h id)) 
+--                 w1′′ = cong lift (fun-ext λ z → trans (sym ∘-assoc) (sym (CatBasics.rewrite-right-∘ ℂ (sym right-id) refl)))
+
+--                 w2 : ∀ {T} → lift (λ h → (f ∘ g) ∘ (comp ℂ {T} {_} {_} h id)) ≡ Functor.fmap Hom-F (id , comp ℂ f g)
+--                 w2 = refl
+--               in
+--               trans w1 (trans w1′ (trans w1′′ w2))
+--     }
 Hom-𝟘 : ∀ {𝟘} → IsInitial 𝟘 →
   ∀ {A B} →
   Hom A 𝟘 →

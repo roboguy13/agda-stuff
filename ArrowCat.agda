@@ -64,9 +64,6 @@ Interval-Cat =
     comp-assoc-def {_} {_} {_} {_} {interval-id .(suc zero)} {interval-id .(suc zero)} {interval-arr} = refl
     comp-assoc-def {_} {_} {_} {_} {interval-id _} {interval-id _} {interval-id _} = refl
 
--- Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (lsuc o Level.⊔ lsuc ℓ Level.⊔ lsuc lzero) (lsuc lzero Level.⊔ lsuc lzero Level.⊔ lsuc o Level.⊔ lsuc ℓ)
--- Arrow-Cat ℂ = [ Interval-Cat ,, ℂ ]
-
 -- Comma category
 _↓_ : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} →
   {𝔸 : Category o₁ ℓ₁} →
@@ -235,3 +232,6 @@ _↓_ {o₁} {ℓ₁} {o₂} {ℓ₂} {o₃} {ℓ₃} {𝔸} {𝔹} {ℂ} S T =
 
 Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (o ⊔ ℓ) ℓ
 Arrow-Cat {o} {ℓ} ℂ = Id-Functor {_} {_} {ℂ} ↓ Id-Functor
+
+-- Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (lsuc o Level.⊔ lsuc ℓ Level.⊔ lsuc lzero) (lsuc lzero Level.⊔ lsuc lzero Level.⊔ lsuc o Level.⊔ lsuc ℓ)
+-- Arrow-Cat ℂ = [ Interval-Cat ,, ℂ ]

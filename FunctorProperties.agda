@@ -191,13 +191,6 @@ Lifted-Cat {o₁} {ℓ₁} {o₂} {ℓ₂} ℂ =
     ; ∘-assoc = cong lift (Category.∘-assoc ℂ)
     }
 
--- -- -- Lower-Cat : ∀ {o₁ ℓ₁ o₂ ℓ₂} →
--- -- --   {ℂ : Category (o₁ ⊔ o₂) (ℓ₁ ⊔ ℓ₂)} →
--- -- --   Lifted-Cat {o₁} {ℓ₁} ℂ →
--- -- --   Category o₁ ℓ₁
--- -- -- Lower-Cat {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} _ = ℂ
-
-
 Lifting-Functor : ∀ {o₁ ℓ₁} o₂ ℓ₂ →
   {ℂ : Category o₁ ℓ₁} →
   Functor ℂ (Lifted-Cat {_} {_} {o₂} {ℓ₂} ℂ)
