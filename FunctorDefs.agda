@@ -341,6 +341,15 @@ _∘NT_ {_} {_} {_} {_} {Src} {Tgt} {F} {G} {H} α β =
   open Category.Category Tgt
   open CatBasics Tgt
 
+lift-to-NT : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {A B : Category.Obj ℂ} →
+  (A ⇒[ ℂ ] B) →
+  NatTrans {_} {_} {_} {_} {𝔻} {ℂ} (Const-Functor A) (Const-Functor B)
+lift-to-NT {_} {_} {_} {_} {ℂ} {𝔻} f =
+  record
+    { component = λ x → f
+    ; natural = λ x y f₁ → trans (Category.right-id ℂ) (sym (Category.left-id ℂ))
+    }
+
 
 _×cat_ : ∀ {o₁ ℓ₁ o₂ ℓ₂} →
   Category o₁ ℓ₁ → Category o₂ ℓ₂ → Category (o₁ ⊔ o₂) (ℓ₁ ⊔ ℓ₂)

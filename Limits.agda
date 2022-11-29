@@ -48,6 +48,33 @@ Cone-∘ {o₁} {ℓ₁} {o₂} {ℓ₂} {ℂ} {𝔻} {𝔼} {F} {c} G cone =
      NT-id
    )
 
+mk-Cone : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₃ ℓ₃} →
+  {F : Functor ℂ 𝔻} →
+  {c c′ : Category.Obj 𝔻} →
+  (c′ ⇒[ 𝔻 ] c) →
+  Cone F c →
+  Cone F c′
+mk-Cone {_} {_} {_} {_} {_} {_} {ℂ} {𝔻} {𝔼} {F} {c} {c′} f cone =
+  cone ∘NT lift-to-NT f
+
+Cone-cat : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
+  (F : Functor ℂ 𝔻) →
+  Category {!!} {!!}
+Cone-cat F =
+  record
+    { Obj = ∃[ c ] (Cone F c)
+    ; _⇒_ = λ (x₁ , x₂) (y₁ , y₂) → {!!}
+    ; _∘_ = {!!}
+    ; id = {!!}
+    ; left-id = {!!}
+    ; right-id = {!!}
+    ; ∘-assoc = {!!}
+    }
+
+-- Cone-F : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₁ ℓ₁} →
+--   {F : Functor ℂ 𝔻} →
+--   Functor 𝔻 (Cone F)
+
 ACone : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   (F : Functor ℂ 𝔻) →
   Set (Level.suc o₁ Level.⊔ Level.suc ℓ₁ Level.⊔ Level.suc o₂ Level.⊔
@@ -69,7 +96,6 @@ Lim : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Categor
   (F : Functor ℂ 𝔻) →
   Set (lsuc o₁ Level.⊔ lsuc ℓ₁ Level.⊔ lsuc o₂ Level.⊔ lsuc ℓ₂)
 Lim F = ∃[ c ] ∃[ cone ] (Is-Universal-Cone F c cone)
-
 
 
 Fin-Cat : (n : ℕ) → Category Level.zero Level.zero
@@ -127,7 +153,7 @@ Fin-Cat-Functor {_} {_} {ℂ} {n} fn =
 
 Is-Continuous : ∀ {o₁ ℓ₁ o₂ ℓ₂} {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} →
   Functor ℂ 𝔻 →
-  Set (lsuc o₁ Level.⊔ lsuc ℓ₁ Level.⊔ lsuc o₂ Level.⊔ lsuc ℓ₂)
+  Set {!!}
 Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
   (𝔼 : Category o₂ ℓ₂) →
   (A : Functor 𝔼 ℂ) →
@@ -141,10 +167,18 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
     cone : Cone A lim-A-apex
     cone = proj₁ (proj₂ lim-A)
 
-    x , y = m (actf F lim-A-apex) (Cone-∘ F cone)
+    c-f-0 : Cone (F ∘F A) (actf F (proj₁ lim-A))
+    c-f-0 = Cone-∘ F cone
+
+    x , y = m (actf F lim-A-apex) c-f-0
 
     p : actf F lim-A-apex ⇒[ 𝔻 ] lim-FA-apex
     p = x
+
+
+    -- r = proj₂ (proj₂ lim-A) lim-A-apex cone
+    -- z = proj₁ r
+
   in
   ∃[ p⁻¹ ]
     (ElementaryProperties.Iso 𝔻 p p⁻¹)
@@ -152,20 +186,70 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
 よ-Is-Continuous : ∀ {ℓ} {ℂ : Category (lsuc ℓ) ℓ} → Is-Continuous (よ ℂ)
 よ-Is-Continuous {ℓ} {ℂ} 𝔼 A lim-A lim-よA =
   let
+    lim-A-apex : Category.Obj ℂ
     lim-A-apex = proj₁ lim-A
+
+    lim-よA-apex : Category.Obj [ Op ℂ ,, Agda ]
     lim-よA-apex = proj₁ lim-よA
+
     m = proj₂ (proj₂ lim-よA)
+    m′ = proj₂ (proj₂ lim-A)
 
     cone : Cone A lim-A-apex
     cone = proj₁ (proj₂ lim-A)
 
     x , y = m (actf (よ ℂ) lim-A-apex) (Cone-∘ (よ ℂ) cone)
 
-    p : actf (よ ℂ) lim-A-apex ⇒[ ([ Op ℂ ,, Agda ]) ] lim-よA-apex
+    -- p : actf (よ ℂ) lim-A-apex ⇒[ ([ Op ℂ ,, Agda ]) ] lim-よA-apex
+    p : NatTrans (actf (よ ℂ) lim-A-apex) lim-よA-apex
     p = x
 
-    p⁻¹ : lim-よA-apex ⇒[ ([ Op ℂ ,, Agda ]) ] actf (よ ℂ) lim-A-apex
-    p⁻¹ = {!!}
+    よ-A : Functor 𝔼 [ Op ℂ ,, Agda ]
+    よ-A = (よ ℂ ∘F A)
+
+    cone-よ : Cone よ-A lim-よA-apex
+    cone-よ = proj₁ (proj₂ lim-よA)
+
+    x₀′ , _ = m′ {!!} {!!}
+
+    -- x′ : NatTrans lim-よA-apex lim-よA-apex
+    -- x′ = x₀′
+
+    Tgt : Category.Obj [ Op ℂ ,, Agda ]
+    Tgt = actf (よ ℂ) lim-A-apex
+
+    -- p⁻¹ : NatTrans lim-よA-apex (actf (よ ℂ) lim-A-apex)
+    -- p⁻¹ = {!!}
+
+    -- q₀ , _ = proj₂ (proj₂ lim-A) {!!} {!!}
+
+    -- p⁻¹ : lim-よA-apex ⇒[ ([ Op ℂ ,, Agda ]) ] actf (よ ℂ) lim-A-apex
+    p⁻¹ : NatTrans lim-よA-apex (actf (よ ℂ) lim-A-apex)
+    p⁻¹ =
+      record
+        { component = λ x₁ → lift (λ x₂ →
+                    let
+                      ty = lim-よA-apex
+                      x₂′ : actf lim-よA-apex x₁
+                      x₂′ = x₂
+
+                      p′ = NatTrans.component p x₁
+
+                      m1 = m (actf (よ ℂ) x₁) {!!} --x₂
+
+                      test : Lift ℓ (Arr (ℂop ℂ) (proj₁ lim-A) x₁)
+                      test = lift {!!}
+
+                      w′ : Functor.act (actf (よ ℂ) (proj₁ lim-A)) x₁
+                      w′ = test
+
+                      w = lower (Functor.fmap (actf (よ ℂ) (proj₁ lim-A)) (Category.id (Op ℂ))) {!!} -- (Functor.fmap (actf (よ ℂ) (proj₁ lim-A)) {!!})
+                    in
+                    w)
+        ; natural = λ x₁ y₁ f → {!!}
+        }
   in
-  p⁻¹ , {!!}
+  {!!}
+  -- p⁻¹ , {!!} , {!!}
+  -- p⁻¹ , p
   -- {!!} , {!!}

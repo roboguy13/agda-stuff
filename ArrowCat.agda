@@ -67,45 +67,59 @@ Interval-Cat =
 -- Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (lsuc o Level.⊔ lsuc ℓ Level.⊔ lsuc lzero) (lsuc lzero Level.⊔ lsuc lzero Level.⊔ lsuc o Level.⊔ lsuc ℓ)
 -- Arrow-Cat ℂ = [ Interval-Cat ,, ℂ ]
 
-Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (o ⊔ ℓ) ℓ
-Arrow-Cat {o} {ℓ} ℂ =
+-- Comma category
+_↓_ : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} →
+  {𝔸 : Category o₁ ℓ₁} →
+  {𝔹 : Category o₂ ℓ₂} →
+  {ℂ : Category o₃ ℓ₃} →
+  (S : Functor 𝔸 ℂ)
+  (T : Functor 𝔹 ℂ) →
+  Category (o₁ ⊔ o₂ ⊔ ℓ₃) ℓ₃
+_↓_ {o₁} {ℓ₁} {o₂} {ℓ₂} {o₃} {ℓ₃} {𝔸} {𝔹} {ℂ} S T =
   record
     { Obj = Obj₀
     ; _⇒_ = _⇒₀_
-    ; _∘_ = ∘-def
+    ; _∘_ = _∘₀_
     ; id = (Category.id ℂ , Category.id ℂ) , trans (Category.right-id ℂ) (sym (Category.left-id ℂ))
     ; left-id = left-id-def
     ; right-id = right-id-def
     ; ∘-assoc = ∘-assoc-def
     }
     where
-      Obj₀ : Set (o Level.⊔ ℓ)
-      Obj₀ = Σ (Category.Obj ℂ × Category.Obj ℂ) λ (A , B) →  (A ⇒[ ℂ ] B)
+      Obj₀ : Set (o₁ ⊔ o₂ ⊔ ℓ₃)
+      Obj₀ = Σ (Category.Obj 𝔸 × Category.Obj 𝔹) λ (A , B) →  (actf S A ⇒[ ℂ ] actf T B)
 
-      _⇒₀_ : Obj₀ → Obj₀ → Set ℓ
-      _⇒₀_ = λ ((A₁ , B₁) , f) ((A₂ , B₂) , g) → Σ ((B₂ ⇒[ ℂ ] B₁) × (A₂ ⇒[ ℂ ] A₁)) λ (a , b) → (ElementaryProperties.CSquare ℂ f a b g)
+      -- _⇒₀_ : {!!} -- Obj₀ → Obj₀ → Set ℓ
+      _⇒₀_ = λ ((A₁ , B₁) , f) ((A₂ , B₂) , g) →
+        Σ ((actf T B₂ ⇒[ ℂ ] actf T B₁) × (actf S A₂ ⇒[ ℂ ] actf S A₁)) λ (a , b) →
+        (ElementaryProperties.CSquare ℂ f a b g)
 
-      ∘-def : ∀ {A B C} → (B ⇒₀ C) → (A ⇒₀ B) → (A ⇒₀ C)
-      ∘-def {(A , A′) , f-A} {(B , B′) , f-B} {(C , C′) , f-C} F G =
+      _∘₀_ : {A B C : Obj₀} → B ⇒₀ C → A ⇒₀ B → A ⇒₀ C
+      _∘₀_ {A} {B} {C} f g =
         let
-          ((p , q) , snd) = F
-          ((f , g) , snd₁) = G
-          s = g ∘[ ℂ ] q
-          t = f ∘[ ℂ ] p
+          (A₁ , A₂) , A-f = A
+          (B₁ , B₂) , B-f = B
+          (C₁ , C₂) , C-f = C
+
+          (f₁ , f₂) , f₃ = f
+          (g₁ , g₂) , g₃ = g
+
+          p = g₁ ∘[ ℂ ] f₁
+          q = g₂ ∘[ ℂ ] f₂
         in
-        (t , s) , ElementaryProperties.CSquare-vert-comp ℂ snd snd₁
+        (p , q) , ElementaryProperties.CSquare-vert-comp ℂ f₃ g₃
 
       left-id-def : {A B : Obj₀} {f : A ⇒₀ B} →
-                    ∘-def ((Category.id ℂ , Category.id ℂ),
+                    (((Category.id ℂ , Category.id ℂ) ,
                       trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
-                      f
+                    ∘₀ f)
                     ≡ f
       left-id-def {A} {B} {f} =
         let
             f1 = proj₁ (proj₁ f)
             f2 = proj₂ (proj₁ f)
 
-            ∘-app = ∘-def ((Category.id ℂ , Category.id ℂ) ,
+            ∘-app = _∘₀_ ((Category.id ℂ , Category.id ℂ) ,
                       trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
                       f
 
@@ -128,7 +142,7 @@ Arrow-Cat {o} {ℓ} ℂ =
         Inverse.f Σ-≡,≡↔≡ (p1 , (uip _ (proj₂ f)))
 
       right-id-def : ∀ {A B : Obj₀} {f : A ⇒₀ B} →
-                    ∘-def f
+                    _∘₀_ f
                     ((Category.id ℂ , Category.id ℂ) ,
                     trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
                     ≡ f
@@ -137,7 +151,7 @@ Arrow-Cat {o} {ℓ} ℂ =
             f1 = proj₁ (proj₁ f)
             f2 = proj₂ (proj₁ f)
 
-            ∘-app = ∘-def f ((Category.id ℂ , Category.id ℂ) ,
+            ∘-app = _∘₀_ f ((Category.id ℂ , Category.id ℂ) ,
                       trans (Category.right-id ℂ) (sym (Category.left-id ℂ)))
                       -- f
 
@@ -161,7 +175,7 @@ Arrow-Cat {o} {ℓ} ℂ =
         Inverse.f Σ-≡,≡↔≡ (p1 , (uip _ (proj₂ f)))
 
       ∘-assoc-def : ∀ {A B C D : Obj₀} {f : C ⇒₀ D} {g : B ⇒₀ C} {h : A ⇒₀ B} →
-            ∘-def (∘-def f g) h ≡ ∘-def f (∘-def g h)
+            _∘₀_ (_∘₀_ f g) h ≡ _∘₀_ f (_∘₀_ g h)
       ∘-assoc-def {A} {B} {C} {D} {f} {g} {h} =
         let
           f1 = proj₁ (proj₁ f)
@@ -173,8 +187,8 @@ Arrow-Cat {o} {ℓ} ℂ =
           h1 = proj₁ (proj₁ h)
           h2 = proj₂ (proj₁ h)
 
-          ∘-app-1 = ∘-def (∘-def f g) h
-          ∘-app-2 = ∘-def f (∘-def g h)
+          ∘-app-1 = _∘₀_ (_∘₀_ f g) h
+          ∘-app-2 = _∘₀_ f (_∘₀_ g h)
 
           ∘-1-fst = proj₁ (proj₁ ∘-app-1)
           ∘-1-snd = proj₂ (proj₁ ∘-app-1)
@@ -182,16 +196,16 @@ Arrow-Cat {o} {ℓ} ℂ =
           ∘-2-fst = proj₁ (proj₁ ∘-app-2)
           ∘-2-snd = proj₂ (proj₁ ∘-app-2)
 
-          fg-1 : proj₁ (proj₁ (∘-def f g)) ≡ (g1 ∘[ ℂ ] f1)
+          fg-1 : proj₁ (proj₁ (_∘₀_ f g)) ≡ (g1 ∘[ ℂ ] f1)
           fg-1 = refl
 
-          fg-2 : proj₂ (proj₁ (∘-def f g)) ≡ (g2 ∘[ ℂ ] f2)
+          fg-2 : proj₂ (proj₁ (_∘₀_ f g)) ≡ (g2 ∘[ ℂ ] f2)
           fg-2 = refl
 
-          gh-1 : proj₁ (proj₁ (∘-def g h)) ≡ (h1 ∘[ ℂ ] g1)
+          gh-1 : proj₁ (proj₁ (_∘₀_ g h)) ≡ (h1 ∘[ ℂ ] g1)
           gh-1 = refl
 
-          gh-2 : proj₂ (proj₁ (∘-def g h)) ≡ (h2 ∘[ ℂ ] g2)
+          gh-2 : proj₂ (proj₁ (_∘₀_ g h)) ≡ (h2 ∘[ ℂ ] g2)
           gh-2 = refl
 
           p-1 : proj₁ (proj₁ ∘-app-1) ≡ (h1 ∘[ ℂ ] (g1 ∘[ ℂ ] f1) )
@@ -218,3 +232,6 @@ Arrow-Cat {o} {ℓ} ℂ =
 
         in
         Inverse.f Σ-≡,≡↔≡ (proj₁-eq , uip _ (proj₂ ∘-app-2))
+
+Arrow-Cat : ∀ {o ℓ} → Category o ℓ → Category (o ⊔ ℓ) ℓ
+Arrow-Cat {o} {ℓ} ℂ = Id-Functor {_} {_} {ℂ} ↓ Id-Functor
