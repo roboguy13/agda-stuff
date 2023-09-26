@@ -259,6 +259,16 @@ Is-Continuous {_} {_} {o₂} {ℓ₂} {ℂ} {𝔻} F =
     -- h = lower (Functor.fmap lim-よA-apex q₀) {!!}
     h = (Functor.fmap lim-よA-apex q₀)
 
+    lift よ-lem-1 , lift よ-lem-2 , よ-lem-3 = Yoneda-lemma ℂ {lim-よA-apex} {lim-A-apex}
+
+    lift z = よ-lem-1 p
+
+    z′ : actf lim-よA-apex lim-A-apex
+    z′ = z
+
+    w : NatTrans (actf (よ ℂ) lim-A-apex) lim-よA-apex
+    w = よ-lem-2 {!!}
+
     -- x2 , y2 = m′ {!!} {!!}
     -- p⁻¹ : lim-よA-apex ⇒[ ([ Op ℂ ,, Agda ]) ] actf (よ ℂ) lim-A-apex
     p⁻¹ : NatTrans lim-よA-apex (actf (よ ℂ) lim-A-apex)

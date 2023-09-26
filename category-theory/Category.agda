@@ -1,26 +1,49 @@
--- Based on "Formalizing Category Theory in Agda" (Hu and Carette, 2020)
+-- Partially based on "Formalizing Category Theory in Agda" (Hu and Carette, 2020)
 
 open import Relation.Binary.Structures
 open import Agda.Primitive
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality hiding (Extensionality)
+open import Relation.Binary.HeterogeneousEquality hiding (cong; cong₂) renaming (_≅_ to _H≅_; trans to H-trans; sym to H-sym; subst to H-subst; Extensionality to H-Extensionality)
+open import Axiom.Extensionality.Propositional
+open import Axiom.UniquenessOfIdentityProofs.WithK
 
 open import Level
 
 module Category
   where
 
+private postulate fun-ext : ∀ {m n} → Extensionality m n
+
 record Category (o ℓ : Level) : Set (lsuc (o ⊔ ℓ)) where
   infixr 9 _∘_
   field
     Obj : Set o
     _⇒_ : Obj → Obj → Set ℓ
-    _∘_ : ∀ {A B C} → (B ⇒ C) → (A ⇒ B) → (A ⇒ C)
+    _∘′_ : ∀ A B C → (B ⇒ C) → (A ⇒ B) → (A ⇒ C)
 
-    id : ∀ {A} → (A ⇒ A)
+
+    id′ : ∀ A → (A ⇒ A)
+
+  id : ∀ {A} → (A ⇒ A)
+  id = id′ _
+  _∘_ : ∀ {A B C} → (B ⇒ C) → (A ⇒ B) → (A ⇒ C)
+  _∘_ = _∘′_ _ _ _
+
+  field
     left-id : ∀ {A B} → ∀ {f : A ⇒ B} → (id ∘ f) ≡ f
     right-id : ∀ {A B} → ∀ {f : A ⇒ B} → (f ∘ id) ≡ f
     ∘-assoc : ∀ {A B C D} → ∀ {f : C ⇒ D} {g : B ⇒ C} {h : A ⇒ B} →
                     ((f ∘ g) ∘ h) ≡ (f ∘ (g ∘ h))
+
+Category-η : ∀ {o ℓ} {ℂ 𝔻 : Category o ℓ} →
+  Category.Obj ℂ ≡ Category.Obj 𝔻 →
+  Category._⇒_ ℂ H≅ Category._⇒_ 𝔻 →
+  Category._∘′_ ℂ H≅ Category._∘′_ 𝔻 →
+  Category.id′ ℂ H≅ Category.id′ 𝔻 →
+  ℂ ≡ 𝔻
+Category-η {o} {ℓ} {ℂ} {𝔻} refl refl refl refl
+  with fun-ext (λ x → fun-ext λ y → uip (Category.left-id ℂ {x} {y}) (Category.left-id 𝔻 {x} {y}))
+... | p = {!!}
 
 Arr : ∀ {o ℓ} (ℂ : Category o ℓ) → Category.Obj ℂ → Category.Obj ℂ → Set ℓ
 Arr = Category._⇒_

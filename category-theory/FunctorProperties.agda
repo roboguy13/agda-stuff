@@ -10,6 +10,10 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 module FunctorProperties
   where
 
+Op-Op : ∀ {o ℓ} → {ℂ : Category o ℓ} →
+  Op (Op ℂ) ≡ ℂ
+Op-Op {o} {ℓ} {record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc }} = {!!}
+
 
 -- F(A, -)
 F-Left : ∀ {o₁ ℓ₁ o₂ ℓ₂ o₃ ℓ₃} → {ℂ : Category o₁ ℓ₁} {𝔻 : Category o₂ ℓ₂} {𝔼 : Category o₃ ℓ₃} →

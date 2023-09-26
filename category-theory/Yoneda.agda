@@ -299,3 +299,15 @@ module _ where
         q5 = trans (cong₂ lower (Functor.fmap-id X) refl) refl
       in
       trans (cong lift q5) (cong lift q5))
+
+open import AgdaHom
+
+Yoneda-lemma-NT : ∀ {X : Functor (Op ℂ) Agda} →
+    let
+      p = Hom-Right (Op [ Op ℂ ,, Agda ]) X ∘F {!!}
+    in
+    Set
+  -- NatIso
+  --   -- (Hom (actf よ c) X)
+  --   {!!} -- (lifted (actf X c))
+Yoneda-lemma-NT = {!!}
