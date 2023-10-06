@@ -462,11 +462,29 @@ data _⟶_ {V} : Term V → Term V → Set where
   β-inr : ∀ {t u v} →
     match (inr t) u v ⟶ v [ t ]
 
+data _⟶*_ {V} : Term V → Term V → Set where
+  _∎ : ∀ {t} → t ⟶* t
+  _⟶⟨_⟩_ : (t : Term V) → ∀ {t′ t′′} →
+    t ⟶ t′ →
+    t′ ⟶* t′′ →
+    t ⟶* t′′
+
+infix 2 _⇓_
+infix 2 _⇓
+
 _⇓_ : ∀ {V} → Term V → Term V → Set
-_⇓_ t u = Value u × (t ⟶ u)
+_⇓_ t u = Value u × (t ⟶* u)
 
 _⇓ : ∀ {V} → Term V → Set
 _⇓ t = ∃[ u ] (t ⇓ u)
+
+-- TODO:
+--  - Subject reduction
+--  - Confluence
+--  - Canonical forms lemma
+--  - Weak normalization
+
+
 
 -- -- NbE
 -- mutual
