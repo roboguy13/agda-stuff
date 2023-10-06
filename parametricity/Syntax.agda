@@ -2,6 +2,7 @@ open import Data.Nat
 open import Relation.Binary.PropositionalEquality hiding ([_]) renaming (subst to Eq-subst)
 open import Data.Product
 open import Data.Unit
+open import Data.Empty
 
 module Syntax
   where
@@ -31,6 +32,9 @@ data Type (V : Set) : Set where
 
 Type′ : Set₁
 Type′ = ∀ {V} → Type V
+
+Closed-Type : Set
+Closed-Type = Type ⊥
 
 -- Ty-Context→ℕ : ∀ {Δ} →
 --   ∀ {k} → Δ T∋ k →
@@ -101,6 +105,9 @@ data Term (V : Set) : Set where
   inl : Term V → Term V
   inr : Term V → Term V
   match : Term V → Term V → Term V → Term V
+
+Term′ : Set₁
+Term′ = ∀ {V} → Term V
 
 Context→ℕ : ∀ {V} {Γ : Context V} →
   ∀ {A} → Γ ∋ A →
@@ -389,3 +396,162 @@ subst1-preserves-type : ∀ {V} {Γ : Context V} {A B t u} →
   Γ ⊢ (t [ u ]) ⦂ A
 subst1-preserves-type t-typed u-typed =
   subst-preserves-type (subst1-σ-Is-Subst u-typed) t-typed
+
+data Value {V} : Term V → Set where
+  Val-unit : Value unit
+  Val-ƛ : ∀ {t} → Value (ƛ t)
+  Val-pair : ∀ {t u} →
+    Value t →
+    Value u →
+    Value (pair t u)
+  Val-inl : ∀ {t} →
+    Value (inl t)
+  Val-inr : ∀ {t} →
+    Value (inr t)
+
+infix 2 _⟶_
+data _⟶_ {V} : Term V → Term V → Set where
+  ξ-∙₁ : ∀ {t t′ u} →
+    t ⟶ t′ →
+    t ∙ u ⟶ t′ ∙ u
+
+  ξ-∙₂ : ∀ {t u u′} →
+    u ⟶ u′ →
+    t ∙ u ⟶ t ∙ u′
+
+  ξ-pair₁ : ∀ {t t′ u} →
+    t ⟶ t′ →
+    pair t u ⟶ pair t′ u
+
+  ξ-pair₂ : ∀ {t u u′} →
+    u ⟶ u′ →
+    pair t u ⟶ pair t u′
+
+  ξ-fst : ∀ {t t′} →
+    t ⟶ t′ →
+    fst t ⟶ fst t′
+
+  ξ-snd : ∀ {t t′} →
+    t ⟶ t′ →
+    snd t ⟶ snd t′
+
+  ξ-inl : ∀ {t t′} →
+    t ⟶ t′ →
+    inl t ⟶ inl t′
+
+  ξ-inr : ∀ {t t′} →
+    t ⟶ t′ →
+    inr t ⟶ inr t′
+
+  match-ξ : ∀ {t t′ u v} →
+    t ⟶ t′ →
+    match t u v ⟶ match t′ u v
+
+  β-ƛ : ∀ {t u} →
+    (ƛ t) ∙ u ⟶ t [ u ]
+
+  β-pair₁ : ∀ {t u} →
+    fst (pair t u) ⟶ t
+
+  β-pair₂ : ∀ {t u} →
+    snd (pair t u) ⟶ u
+
+  β-inl : ∀ {t u v} →
+    match (inl t) u v ⟶ u [ t ]
+
+  β-inr : ∀ {t u v} →
+    match (inr t) u v ⟶ v [ t ]
+
+_⇓_ : ∀ {V} → Term V → Term V → Set
+_⇓_ t u = Value u × (t ⟶ u)
+
+_⇓ : ∀ {V} → Term V → Set
+_⇓ t = ∃[ u ] (t ⇓ u)
+
+-- -- NbE
+-- mutual
+--   Env : ∀ {V} → Context V → Set₁
+--   Env {V} Γ = ∀ {A} → Γ ∋ A → ∃[ t ] Value {V} t
+--   -- ClosureEnv {V} Γ = V → ∃[ t ] Closure {V} t
+--   -- ClosureEnv {V} Γ = V → ∃[ t ] Closure {V} t
+
+--   data Closure {V : Set} (t : Term V) : Set₁ where
+--     closure : ∀ {Γ : Context V} {A B} →
+--       (Γ ,, A) ⊢ t ⦂ B →
+--       Env Γ →
+--       Closure t
+
+--   data Value {V} : Term V → Set₁ where
+--     Val-Ne : ∀ {t} → Neutral t → Value t
+--     Val-unit : Value unit
+--     Val-ƛ : ∀ {t} →
+--       Closure t →
+--       Value (ƛ t)
+--     Val-pair : ∀ {t u} →
+--       Value t →
+--       Value u →
+--       Value (pair t u)
+--     Val-inl : ∀ {t} →
+--       Value (inl t)
+--     Val-inr : ∀ {t} →
+--       Value (inr t)
+
+--   data Neutral {V} : Term V → Set₁ where
+--     Ne-var : ∀ {n} → Neutral (var n)
+--     Ne-app : ∀ {t u} →
+--       Neutral t →
+--       Value u →
+--       Neutral (t ∙ u)
+--     Ne-fst : ∀ {t} →
+--       Neutral t →
+--       Neutral (fst t)
+--     Ne-snd : ∀ {t} →
+--       Neutral t →
+--       Neutral (snd t)
+--     Ne-match : ∀ {t u v} →
+--       Neutral t →
+--       Value u →
+--       Value v →
+--       Neutral (match t u v)
+--     Ne-＠ : ∀ {t A} →
+--       Neutral t →
+--       Neutral (t ＠ A)
+
+-- extend-Env : ∀ {V} {Γ : Context V} → Env Γ → ∀ {t A} →
+--   Γ ⊢ t ⦂ A →
+--   Value t →
+--   Env (Γ ,, A)
+-- extend-Env env {t} t-typed t-value ∋-here = t , t-value
+-- extend-Env env t-typed t-value (∋-there x) = env x
+
+-- eval-var : ∀ {V} {Γ : Context V} {A} → Env Γ → Γ ∋ A → ∃[ t ] Value {V} t
+-- eval-var = {!!}
+
+-- do-apply : ∀ {V} {Γ : Context V} {A B} {t u} →
+--   (Γ ,, A) ⊢ t ⦂ B →
+--   Γ ⊢ u ⦂ A →
+--   Value t →
+--   Value u →
+--   ∃[ v ] Value {V = V} v
+-- do-apply = {!!}
+
+-- eval : ∀ {V} {Γ : Context V} {A} → Env Γ → {t : Term V} → Γ ⊢ t ⦂ A → ∃[ t′ ] Value {V = V} t′
+-- eval env T-unit = unit , Val-unit
+-- eval env (T-var prf x) = eval-var env prf
+-- eval env {t = t} (T-ƛ t-typed) =
+--   let
+--     -- u , u-val = eval env t-typed
+--     cl = closure t-typed env
+--   in
+--   t
+--   ,
+--   Val-ƛ cl
+-- eval env (T-∙ t-typed t-typed₁) = {!!} --do-apply t-typed t-typed₁
+-- eval env (T-Λ x) = {!!}
+-- eval env (T-＠ t-typed) = {!!}
+-- eval env (T-pair t-typed t-typed₁) = {!!}
+-- eval env (T-fst t-typed) = {!!}
+-- eval env (T-snd t-typed) = {!!}
+-- eval env (T-inl t-typed) = {!!}
+-- eval env (T-inr t-typed) = {!!}
+-- eval env (T-match t-typed t-typed₁ t-typed₂) = {!!}
