@@ -1,8 +1,11 @@
+-- {-# OPTIONS --cumulativity #-}
+
 open import Data.Nat
 open import Relation.Binary.PropositionalEquality hiding ([_]) renaming (subst to Eq-subst)
 open import Data.Product
 open import Data.Unit
 open import Data.Empty
+open import Level renaming (zero to lzero; suc to lsuc)
 
 module Syntax
   where
@@ -22,7 +25,7 @@ infixr 4 _⇒_
 --     Δ T∋ k →
 --     (Δ ,, k′) T∋ k
 
-data Type (V : Set) : Set where
+data Type {ℓ} (V : Set ℓ) : Set ℓ where
   Ty-Var : V → Type V
   Unit : Type V
   Pair : Type V → Type V → Type V
@@ -30,8 +33,8 @@ data Type (V : Set) : Set where
   _⇒_ : Type V → Type V → Type V
   Forall : (V → Type V) → Type V
 
-Type′ : Set₁
-Type′ = ∀ {V} → Type V
+Type′ : ∀ {ℓ} → Set (lsuc ℓ)
+Type′ {ℓ} = ∀ {V : Set ℓ} → Type V
 
 Closed-Type : Set
 Closed-Type = Type ⊥
@@ -64,7 +67,7 @@ Closed-Type = Type ⊥
 --     (∁ ,, k) ⊢ A type →
 --     ∁ ⊢ Forall A type
 
-data Context (V : Set) : Set where
+data Context {ℓ} (V : Set ℓ) : Set ℓ where
   ∅ : Context V
   _,,_ : Context V → Type V → Context V
 
@@ -80,7 +83,7 @@ Context′ = ∀ {V} → Context V
 --     ∁ ⊢ Γ ctx →
 --     ∁ ⊢ (Γ ,, A) ctx
 
-data _∋_ {V : Set} : Context V → Type V → Set where
+data _∋_ {ℓ} {V : Set ℓ} : Context V → Type V → Set ℓ where
   ∋-here : ∀ {Γ A} → (Γ ,, A) ∋ A
   ∋-there : ∀ {Γ A B} →
     Γ ∋ A →
@@ -92,7 +95,7 @@ _∋′_ Γ A = _∋_ {V = ⊤} Γ A
 _,,′_ : Context′ → Type′ → Context′
 _,,′_ Γ A = _,,_ Γ A
 
-data Term (V : Set) : Set where
+data Term {ℓ} (V : Set ℓ) : Set ℓ where
   unit : Term V
   var : ℕ → Term V
   ƛ : Term V → Term V
@@ -109,7 +112,7 @@ data Term (V : Set) : Set where
 Term′ : Set₁
 Term′ = ∀ {V} → Term V
 
-Context→ℕ : ∀ {V} {Γ : Context V} →
+Context→ℕ : ∀ {ℓ} {V : Set ℓ} {Γ : Context V} →
   ∀ {A} → Γ ∋ A →
   ℕ
 Context→ℕ ∋-here = zero
@@ -118,7 +121,7 @@ Context→ℕ (∋-there x) = suc (Context→ℕ x)
 
 -- infix 3 [_]_⊢_⦂_
 infix 3 _⊢_⦂_
-data _⊢_⦂_ {V} : Context V → Term V → Type V → Set₁ where
+data _⊢_⦂_ {ℓ} {V : Set ℓ} : Context V → Term V → Type V → Set (lsuc ℓ) where
   T-unit : ∀ {Γ : Context V} →
      Γ ⊢ unit ⦂ Unit
 
@@ -194,7 +197,7 @@ ext : (ℕ → ℕ) → (ℕ → ℕ)
 ext ρ zero = zero
 ext ρ (suc x) = suc (ρ x)
 
-rename : ∀ {V} →
+rename : ∀ {ℓ} {V : Set ℓ} →
   (ℕ → ℕ) →
   Term V →
   Term V
@@ -212,13 +215,13 @@ rename ρ (inr t) = inr (rename ρ t)
 rename ρ (match s t₁ t₂) =
   match (rename ρ s) (rename (ext ρ) t₁) (rename (ext ρ) t₂)
 
-exts : ∀ {V} →
+exts : ∀ {ℓ} {V : Set ℓ} →
   (ℕ → Term V) →
   (ℕ → Term V)
 exts σ zero = var zero
 exts σ (suc x) = rename suc (σ x)
 
-subst : ∀ {V} →
+subst : ∀ {ℓ} {V : Set ℓ} →
   (ℕ → Term V) →
   Term V →
   Term V
@@ -236,11 +239,11 @@ subst σ (inr t) = inr (subst σ t)
 subst σ (match s t₁ t₂) =
   match (subst σ s) (subst (exts σ) t₁) (subst (exts σ) t₂)
 
-subst1-σ : ∀ {V} → Term V → ℕ → Term V
+subst1-σ : ∀ {ℓ} {V : Set ℓ} → Term V → ℕ → Term V
 subst1-σ t zero = t
 subst1-σ t (suc x) = var x
 
-_[_] : ∀ {V} →
+_[_] : ∀ {ℓ} {V : Set ℓ} →
   Term V →
   Term V →
   Term V
@@ -397,7 +400,7 @@ subst1-preserves-type : ∀ {V} {Γ : Context V} {A B t u} →
 subst1-preserves-type t-typed u-typed =
   subst-preserves-type (subst1-σ-Is-Subst u-typed) t-typed
 
-data Value {V} : Term V → Set where
+data Value {ℓ} {V : Set ℓ} : Term V → Set ℓ where
   Val-unit : Value unit
   Val-ƛ : ∀ {t} → Value (ƛ t)
   Val-pair : ∀ {t u} →
@@ -478,8 +481,187 @@ _⇓_ t u = Value u × (t ⟶* u)
 _⇓ : ∀ {V} → Term V → Set
 _⇓ t = ∃[ u ] (t ⇓ u)
 
+⟶-typed : ∀ {V Γ A} {t u : Term V} →
+  Γ ⊢ t ⦂ A →
+  t ⟶ u →
+  Γ ⊢ u ⦂ A
+⟶-typed (T-∙ t-typed t-typed₁) (ξ-∙₁ t⟶u) = T-∙ (⟶-typed t-typed t⟶u) t-typed₁
+⟶-typed (T-∙ t-typed t-typed₁) (ξ-∙₂ t⟶u) = T-∙ t-typed (⟶-typed t-typed₁ t⟶u)
+⟶-typed (T-pair t-typed t-typed₁) (ξ-pair₁ t⟶u) = T-pair (⟶-typed t-typed t⟶u) t-typed₁
+⟶-typed (T-pair t-typed t-typed₁) (ξ-pair₂ t⟶u) = T-pair t-typed (⟶-typed t-typed₁ t⟶u)
+⟶-typed (T-fst t-typed) (ξ-fst t⟶u) = T-fst (⟶-typed t-typed t⟶u)
+⟶-typed (T-snd t-typed) (ξ-snd t⟶u) = T-snd (⟶-typed t-typed t⟶u)
+⟶-typed (T-inl t-typed) (ξ-inl t⟶u) = T-inl (⟶-typed t-typed t⟶u)
+⟶-typed (T-inr t-typed) (ξ-inr t⟶u) = T-inr (⟶-typed t-typed t⟶u)
+⟶-typed (T-match t-typed t-typed₁ t-typed₂) (match-ξ t⟶u) = T-match (⟶-typed t-typed t⟶u) t-typed₁ t-typed₂
+⟶-typed (T-∙ (T-ƛ t-typed) t-typed₁) β-ƛ = subst1-preserves-type t-typed t-typed₁
+⟶-typed (T-fst (T-pair t-typed t-typed₁)) β-pair₁ = t-typed
+⟶-typed (T-snd (T-pair t-typed t-typed₁)) β-pair₂ = t-typed₁
+⟶-typed (T-match (T-inl t-typed) t-typed₁ t-typed₂) β-inl = subst1-preserves-type t-typed₁ t-typed
+⟶-typed (T-match (T-inr t-typed) t-typed₁ t-typed₂) β-inr = subst1-preserves-type t-typed₂ t-typed
+
+⟶*-typed : ∀ {V Γ A} {t u : Term V} →
+  Γ ⊢ t ⦂ A →
+  t ⟶* u →
+  Γ ⊢ u ⦂ A
+⟶*-typed t-typed _∎ = t-typed
+⟶*-typed t-typed (_ ⟶⟨ p ⟩ t⟶*u) =
+  ⟶*-typed (⟶-typed t-typed p) t⟶*u
+
+⇓-typed : ∀ {V Γ A} {t u : Term V} →
+  Γ ⊢ t ⦂ A →
+  t ⇓ u →
+  Γ ⊢ u ⦂ A
+⇓-typed t-typed (_ , t⟶*u) = ⟶*-typed t-typed t⟶*u
+
+Simulation : ∀ {ℓ m n} {A B : Set} →
+  (A → B → Set ℓ) →
+  (A → A → Set m) →
+  (B → B → Set n) →
+  Set (ℓ Level.⊔ m Level.⊔ n)
+Simulation _~_ _⊚_ _⊚′_ =
+  ∀ {M M† N} →
+  M ~ M† →
+  M ⊚ N →
+  ∃[ N† ]
+  ((M† ⊚′ N†)
+    ×
+   (N ~ N†))
+
+Bisimulation : ∀ {A B : Set} →
+  (A → B → Set) →
+  (A → A → Set) →
+  (B → B → Set) →
+  Set
+Bisimulation _~_ _⊚_ _⊚′_ =
+  Simulation _~_ _⊚_ _⊚′_
+    ×
+  Simulation (λ x y → y ~ x) _⊚′_ _⊚_
+
+-- _<->_ : ∀ {ℓ} → Set ℓ → Set ℓ → Set (lsuc ℓ)
+-- _<->_ {ℓ} A B = A → B → Set ℓ
+
+Type-join : ∀ {ℓ} {V : Set ℓ} → Type (Type V) → Type V
+Type-join (Ty-Var A) = A
+Type-join Unit = Unit
+Type-join (Pair A B) = Pair (Type-join A) (Type-join B)
+Type-join (Sum A B) = Sum (Type-join A) (Type-join B)
+Type-join (A ⇒ B) = Type-join A ⇒ Type-join B
+Type-join (Forall F) =
+  Forall λ x →
+    Type-join (F (Ty-Var x))
+
+
+Rel-On : ∀ {ℓ} (V : Set ℓ) → Type V → Type V → Set (lsuc ℓ)
+Rel-On V A B =
+  ∀ {Γ} {x x′ : Term V} →
+  Value x →
+  Value x′ →
+  Γ ⊢ x ⦂ A →
+  Γ ⊢ x′ ⦂ B →
+  Set
+
+record Rel {ℓ} (V : Set ℓ) : Set (lsuc ℓ) where
+  constructor mk-Rel
+  field
+    unpack : ∃[ A ] ∃[ B ] Rel-On V A B
+
+open import Data.Sum
+
+Agda-type : Type Set → Set₁
+Agda-type Unit = Lift (lsuc lzero) ⊤
+Agda-type (Pair A B) = Agda-type A × Agda-type B
+Agda-type (Sum A B) = Agda-type A ⊎ Agda-type B
+Agda-type (A ⇒ B) = Agda-type A → Agda-type B
+Agda-type (Forall F) = ∀ (S : Set) → Agda-type (F S)
+Agda-type (Ty-Var S) = Lift (lsuc lzero) S
+
+data Env : Context Set → Set₁ where
+  ∅ : Env ∅
+  _,,_ : ∀ {Γ A} →
+    Env Γ →
+    Agda-type A →
+    Env (Γ ,, A)
+
+env-lookup : ∀ {Γ} {A} →
+  Γ ∋ A →
+  Env Γ →
+  Agda-type A
+env-lookup ∋-here (γ ,, x) = x
+env-lookup (∋-there x) (γ ,, x₁) = env-lookup x γ
+
+⟦_⟧ : ∀ {Γ} {t} {A} →
+  Γ ⊢ t ⦂ A →
+  Env Γ →
+  Agda-type A
+⟦ T-unit ⟧ γ = lift tt
+⟦ T-var x refl ⟧ γ = env-lookup x γ
+⟦ T-ƛ t-typed ⟧ γ = λ x → ⟦ t-typed ⟧ (γ ,, x)
+⟦ T-∙ t-typed t-typed₁ ⟧ γ = ⟦ t-typed ⟧ γ (⟦ t-typed₁ ⟧ γ)
+⟦ T-Λ x ⟧ γ = λ S → ⟦ x S ⟧ γ
+⟦ T-＠ {A = A} t-typed ⟧ γ = ⟦ t-typed ⟧ γ A
+⟦ T-pair t-typed t-typed₁ ⟧ γ = ⟦ t-typed ⟧ γ , ⟦ t-typed₁ ⟧ γ
+⟦ T-fst t-typed ⟧ γ = proj₁ (⟦ t-typed ⟧ γ)
+⟦ T-snd t-typed ⟧ γ = proj₂ (⟦ t-typed ⟧ γ)
+⟦ T-inl t-typed ⟧ γ = inj₁ (⟦ t-typed ⟧ γ)
+⟦ T-inr t-typed ⟧ γ = inj₂ (⟦ t-typed ⟧ γ)
+⟦ T-match t-typed t-typed₁ t-typed₂ ⟧ γ with ⟦ t-typed ⟧ γ
+... | inj₁ a = ⟦ t-typed₁ ⟧ (γ ,, a)
+... | inj₂ b = ⟦ t-typed₂ ⟧ (γ ,, b)
+
+-- ... | Ty-Var x = {!!} --Agda-type x
+-- ... | Unit = {!!}
+-- ... | Pair A A₁ = {!!}
+-- ... | Sum A A₁ = {!!}
+-- ... | A ⇒ A₁ = {!!}
+-- ... | Forall x = {!!}
+
+-- Agda-type : ∀ {ℓ} → Type′ {{!!}} → Set {!!}
+-- Agda-type {ℓ} T with T {∀ {V : Set {!!}} → Type {{!!}} V}
+-- ... | Ty-Var A = let x = Agda-type {ℓ} (λ {V : Set {!!}} → A {V}) in x
+-- ... | Unit = {!!}
+-- ... | Pair A A₁ = {!!}
+-- ... | Sum A A₁ = {!!}
+-- ... | A ⇒ A₁ = {!!}
+-- ... | Forall x = {!!}
+
+-- typing-simulation : ∀ {V} →
+--   Simulation
+--     {A = Term V} {B = Term V}
+--     _≡_
+--     (_⟶_ {V = V})
+--     (λ t u → ∃[ Γ ] ∃[ A ] (Γ ⊢ t ⦂ A → Γ ⊢ u ⦂ A))
+-- typing-simulation {M = M} {N = N} refl x₁ =
+--   N , {!!}
+
+-- typing-unique : ∀ {V} {Γ : Context V} {A t} →
+--   (p q : Γ ⊢ t ⦂ A) →
+--   p ≡ q
+-- typing-unique {Γ = Γ} T-unit T-unit = refl
+-- typing-unique {Γ = Γ} (T-var prf refl) (T-var prf₁ x₁) = {!!}
+-- typing-unique {Γ = Γ} (T-ƛ p) q = {!!}
+-- typing-unique {Γ = Γ} (T-∙ p p₁) q = {!!}
+-- typing-unique {Γ = Γ} (T-Λ x) q = {!!}
+-- typing-unique {Γ = Γ} (T-＠ p) q = {!!}
+-- typing-unique {Γ = Γ} (T-pair p p₁) q = {!!}
+-- typing-unique {Γ = Γ} (T-fst p) q = {!!}
+-- typing-unique {Γ = Γ} (T-snd p) q = {!!}
+-- typing-unique {Γ = Γ} (T-inl p) q = {!!}
+-- typing-unique {Γ = Γ} (T-inr p) q = {!!}
+-- typing-unique {Γ = Γ} (T-match p p₁ p₂) q = {!!}
+
+-- pair-lemma : ∀ {V} {Γ : Context V} {A B t u v} →
+--   (t-typed : Γ ⊢ t ⦂ Pair A B) →
+--   fst t ⇓ u →
+--   snd t ⇓ v →
+--   (u-typed : Γ ⊢ u ⦂ A) →
+--   (v-typed : Γ ⊢ v ⦂ B) →
+--   t-typed ≡ T-pair u-typed v-typed
+-- pair-lemma = ?
+
 -- TODO:
---  - Subject reduction
+--  - Head expansion (?)
+--  - Progress
 --  - Confluence
 --  - Canonical forms lemma
 --  - Weak normalization
