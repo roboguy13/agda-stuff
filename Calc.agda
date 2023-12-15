@@ -98,10 +98,13 @@ data ⟨_,_⟩⟶′⟨_,_⟩ : Expr → Output → Expr → Output → Set wher
     -------------
     ⟨ Print (Lit i) , ω ⟩⟶′⟨ Lit i , (i ∷ ω) ⟩
 
-  E-Seq′ : ∀ {a a′ b ω ω′} →
+  E-Seq-1′ : ∀ {a a′ b ω ω′} →
     ⟨ a , ω ⟩⟶′⟨ a′ , ω′ ⟩ →
     -------------
     ⟨ Seq a b , ω ⟩⟶′⟨ b , ω′ ⟩
+
+  E-Seq′ : ∀ {i b ω} →
+    ⟨ Seq (Lit i) b , ω ⟩⟶′⟨ b , ω ⟩
 
 data ⟨_,_⟩⟶′*⟨_,_⟩ : Expr → Output → Expr → Output → Set where
   E-Done′ : ∀ {a ω} →
@@ -164,115 +167,39 @@ value-or-can-step {Seq .(Lit _) .(Lit _)} {ω} | inj₁ Is-Value-Lit | inj₁ Is
 value-or-can-step {Seq .(Lit _) b} {ω} | inj₁ Is-Value-Lit | inj₂ (fst , fst₁ , snd) = inj₂ (Seq (Lit _) fst , fst₁ , E-Seq-2 snd)
 value-or-can-step {Seq a b} {ω} | inj₂ (fst , fst₁ , snd) = inj₂ (Seq fst b , fst₁ , E-Seq-1 snd)
 
-data _~_ : Expr → Expr → Set where
-  Sim-Lit : ∀ {i} →
-    -------------
+open import Data.Nat
 
-    Lit i ~ Lit i
+---- {
+-- Numeric literals as integers
+record Number {a} (A : Set a) : Set a where
+  field fromNat : ℕ → A
 
-  Sim-Add : ∀ {a b a† b†} →
-    a ~ a† →
-    b ~ b† →
-    Add a b ~ Add a† b†
+open Number {{...}} public
 
-  Sim-Print : ∀ {a a†} →
-    a ~ a† →
-    Print a ~ Print a†
+{-# BUILTIN FROMNAT fromNat #-}
 
-  Sim-Seq : ∀ {a b a† b†} →
-    a ~ a† →
-    b ~ b† →
-    Seq a b ~ b†
+instance
+  NumInt : Number ℤ
+  NumInt .Number.fromNat zero    = +0
+  NumInt .Number.fromNat (suc n) = Data.Integer.suc (fromNat n)
+---- }
 
-data _[_]O~_ : Output → Expr → Output → Set where
-  O-Sim-Lit : ∀ {i ω} →
-    ω [ Lit i ]O~ ω
+counterexample : ∃[ a ] ∃[ v ] ∃[ ω′ ]
+  Is-Value v ×
+  ⟨ a , ∅ ⟩⟶*⟨ v , ω′ ⟩ ×
+  ¬ (⟨ a , ∅ ⟩⟶′*⟨ v , ω′ ⟩)
+counterexample =
+  a , Lit 3 ,
+  ω′ , Is-Value-Lit ,
+  E-Step (E-Seq-1 (E-Add-1 E-Print))
+    (E-Step (E-Seq-1 (E-Add-2 E-Print))
+      (E-Step (E-Seq-1 (E-Add refl))
+        (E-Step (E-Seq-2 E-Print) (E-Step E-Seq E-Done)))) ,
+  no-derivation
+  where
+    a = Seq (Add (Print (Lit 1)) (Print (Lit 2))) (Print (Lit 3))
+    ω′ = 3 ∷ (2 ∷ (1 ∷ ∅))
 
-  O-Sim-Add : ∀ {a b ω} →
-    ω [ Add a b ]O~ ω
-
-  O-Sim-Print : ∀ {a ω} →
-    ω [ Print a ]O~ ω
-
-  O-Sim-Seq-1 : ∀ {a a′ b ω ω†} →
-    ⟨ a , ω ⟩⟶⟨ a′ , ω† ⟩ →
-    ω [ Seq a b ]O~ ω†
-
-  O-Sim-Seq : ∀ {i b ω} →
-    ω [ Seq (Lit i) b ]O~ ω
-
-O-Sim-exists : ∀ a ω →
-  ∃[ ω† ]
-  ω [ a ]O~ ω†
-O-Sim-exists (Lit x) ω = ω , O-Sim-Lit
-O-Sim-exists (Add a a₁) ω = ω , O-Sim-Add
-O-Sim-exists (Print a) ω = ω , O-Sim-Print
-O-Sim-exists (Seq a a₁) ω with value-or-can-step {a} {ω}
-... | inj₁ Is-Value-Lit = ω , O-Sim-Seq
-... | inj₂ (fst , fst₁ , snd) = fst₁ , O-Sim-Seq-1 snd
-
-⟶deterministic : ∀ {a b₁ b₂ ω ω₁ ω₂} →
-  ⟨ a , ω ⟩⟶⟨ b₁ , ω₁ ⟩ →
-  ⟨ a , ω ⟩⟶⟨ b₂ , ω₂ ⟩ →
-  b₁ ≡ b₂
-⟶deterministic (E-Add-1 p) (E-Add-1 q) rewrite ⟶deterministic p q = refl
-⟶deterministic (E-Add-2 p) (E-Add-2 q) rewrite ⟶deterministic p q = refl
-⟶deterministic (E-Add refl) (E-Add refl) = refl
-⟶deterministic (E-Print-1 p) (E-Print-1 q) rewrite ⟶deterministic p q = refl
-⟶deterministic E-Print E-Print = refl
-⟶deterministic (E-Seq-1 p) (E-Seq-1 q) rewrite ⟶deterministic p q = refl
-⟶deterministic (E-Seq-2 p) (E-Seq-2 q) rewrite ⟶deterministic p q = refl
-⟶deterministic E-Seq E-Seq = refl
-
-⟶deterministic-state : ∀ {a b₁ b₂ ω ω₁ ω₂} →
-  ⟨ a , ω ⟩⟶⟨ b₁ , ω₁ ⟩ →
-  ⟨ a , ω ⟩⟶⟨ b₂ , ω₂ ⟩ →
-  ω₁ ≡ ω₂
-⟶deterministic-state (E-Add-1 p) (E-Add-1 q) rewrite ⟶deterministic-state p q = refl
-⟶deterministic-state (E-Add-2 p) (E-Add-2 q) rewrite ⟶deterministic-state p q = refl
-⟶deterministic-state (E-Add refl) (E-Add refl) = refl
-⟶deterministic-state (E-Print-1 p) (E-Print-1 q) rewrite ⟶deterministic-state p q = refl
-⟶deterministic-state E-Print E-Print = refl
-⟶deterministic-state (E-Seq-1 p) (E-Seq-1 q) rewrite ⟶deterministic-state p q = refl
-⟶deterministic-state (E-Seq-2 p) (E-Seq-2 q) rewrite ⟶deterministic-state p q = refl
-⟶deterministic-state E-Seq E-Seq = refl
-
-O-Sim-unique : ∀ {a ω ω†₁ ω†₂} →
-  ω [ a ]O~ ω†₁ →
-  ω [ a ]O~ ω†₂ →
-  ω†₁ ≡ ω†₂
-O-Sim-unique O-Sim-Lit O-Sim-Lit = refl
-O-Sim-unique O-Sim-Add O-Sim-Add = refl
-O-Sim-unique O-Sim-Print O-Sim-Print = refl
-O-Sim-unique O-Sim-Seq O-Sim-Seq = refl
-O-Sim-unique (O-Sim-Seq-1 x) (O-Sim-Seq-1 x₂) rewrite ⟶deterministic-state x x₂ = refl
-
-sim : ∀ {a a† b ω ω′} →
-  a ~ a† →
-  ⟨ a , ω ⟩⟶⟨ b , ω′ ⟩ →
-  ∃[ b† ]
-  ∃[ ω† ]
-  ∃[ ω′† ]
-  (b ~ b†)
-    ×
-  (ω [ a ]O~ ω†)
-    ×
-  ⟨ a† , ω† ⟩⟶′*⟨ b† , ω′† ⟩
-sim Sim-Lit ()
-sim (Sim-Add {b† = b†} p p₁) (E-Add-1 q) with sim p q
-... | fst , fst₁ , fst₂ , fst₃ , fst₀ , snd = Add fst b† , fst₁ , fst₂ , Sim-Add fst₃ p₁ , {!O-Sim-Add!} , lift′* E-Add-1′ snd
-sim (Sim-Add p p₁) (E-Add-2 q) = {!!}
-sim (Sim-Add p p₁) (E-Add x) = {!!}
-sim (Sim-Print p) (E-Print-1 q) = {!!}
-sim (Sim-Print p) E-Print = {!!}
-sim (Sim-Seq p p₁) (E-Seq-1 q) = {!!}
-sim (Sim-Seq p p₁) (E-Seq-2 q) = {!!}
-sim (Sim-Seq p p₁) E-Seq = {!!}
--- sim {ω = ω} (Sim-Lit {i = i}) O-Sim-Lit ()
--- sim {ω = ω} {ω′ = ω′} (Sim-Add {a = a} p p₁) prf@O-Sim-Add (E-Add-1 r) with sim p (proj₂ (O-Sim-exists a ω′)) r
--- ... | fst , fst₁ , fst₂ , snd = {!!} , {!!} , {!!} , lift′* E-Add-1′ {!!}
--- sim (Sim-Add p p₁) O-Sim-Add (E-Add-2 r) = {!!}
--- sim (Sim-Add p p₁) O-Sim-Add (E-Add x) = {!!}
--- sim (Sim-Print p) O-Sim-Print r = {!!}
--- sim (Sim-Seq p p₁) (O-Sim-Seq-1 x) r = {!!}
--- sim (Sim-Seq p p₁) O-Sim-Seq r = {!!}
+    no-derivation :
+      ¬ (⟨ a , ∅ ⟩⟶′*⟨ Lit 3 , ω′ ⟩)
+    no-derivation (E-Step′ (E-Seq-1′ (E-Add-1′ E-Print′)) (E-Step′ E-Print′ (E-Step′ () p)))
