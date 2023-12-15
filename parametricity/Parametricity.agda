@@ -2,9 +2,13 @@
 
 open import Syntax
 
+open import Data.Unit
+open import Data.Empty
+
 open import Relation.Binary.PropositionalEquality hiding ([_])
 open import Data.Product
-open import Level
+open import Data.Sum
+open import Level renaming (zero to lzero; suc to lsuc)
 
 module Parametricity {V : Set}
   (Var-rel : V → Rel V)
@@ -41,13 +45,39 @@ data _≡₁_ {A : Set} : A → A → Set₁ where
 -- Rel-left (mk-Rel R) = {!!}
 
 𝓡 : (T : Type Set) →
-  Agda-type T → Agda-type T → Set
-𝓡 (Ty-Var x) A B = {!!}
-𝓡 Unit A B = {!!}
-𝓡 (Pair T T₁) A B = {!!}
-𝓡 (Sum T T₁) A B = {!!}
-𝓡 (T ⇒ T₁) A B = {!!}
-𝓡 (Forall x) A B = {!!}
+  Agda-type T → Agda-type T → Set₁
+𝓡 (Ty-Var x) A B = Lift (lsuc lzero) x
+𝓡 Unit A B = Lift (lsuc lzero) ⊤
+𝓡 (Pair T T₁) (fst₁ , snd₁) (fst₂ , snd₂) =
+  𝓡 T fst₁ fst₂
+    ×
+  𝓡 T₁ snd₁ snd₂
+𝓡 (Sum T T₁) (inj₁ x) (inj₁ y) = 𝓡 T x y
+𝓡 (Sum T T₁) (inj₁ x) (inj₂ y) = Lift (lsuc lzero) ⊥
+𝓡 (Sum T T₁) (inj₂ y) (inj₁ x) = Lift (lsuc lzero) ⊥
+𝓡 (Sum T T₁) (inj₂ x) (inj₂ y) = 𝓡 T₁ x y
+𝓡 (T ⇒ T₁) f g =
+  ∀ a b →
+  𝓡 T a b →
+  𝓡 T₁ (f a) (g b)
+𝓡 (Forall x) f g =
+  ∀ S →
+  𝓡 (x S) (f S) (g S)
+
+parametricity : ∀ {t A} →
+  (t-typed : ∅ ⊢ t ⦂ A) →
+  𝓡 A (⟦ t-typed ⟧ ∅) (⟦ t-typed ⟧ ∅)
+parametricity T-unit = lift tt
+parametricity (T-ƛ t-typed) = {!!}
+parametricity (T-∙ t-typed t-typed₁) = {!!}
+parametricity (T-Λ x) = {!!}
+parametricity (T-＠ t-typed) = {!!}
+parametricity (T-pair t-typed t-typed₁) = parametricity t-typed , parametricity t-typed₁
+parametricity (T-fst t-typed) = {!!}
+parametricity (T-snd t-typed) = {!!}
+parametricity (T-inl t-typed) = parametricity t-typed
+parametricity (T-inr t-typed) = parametricity t-typed
+parametricity (T-match t-typed t-typed₁ t-typed₂) = {!!}
 
 -- 𝓡 :
 --   (T : Type (∀ A B → Rel V A B)) →

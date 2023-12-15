@@ -609,13 +609,6 @@ env-lookup (∋-there x) (γ ,, x₁) = env-lookup x γ
 ... | inj₁ a = ⟦ t-typed₁ ⟧ (γ ,, a)
 ... | inj₂ b = ⟦ t-typed₂ ⟧ (γ ,, b)
 
--- ... | Ty-Var x = {!!} --Agda-type x
--- ... | Unit = {!!}
--- ... | Pair A A₁ = {!!}
--- ... | Sum A A₁ = {!!}
--- ... | A ⇒ A₁ = {!!}
--- ... | Forall x = {!!}
-
 -- Agda-type : ∀ {ℓ} → Type′ {{!!}} → Set {!!}
 -- Agda-type {ℓ} T with T {∀ {V : Set {!!}} → Type {{!!}} V}
 -- ... | Ty-Var A = let x = Agda-type {ℓ} (λ {V : Set {!!}} → A {V}) in x
