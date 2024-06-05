@@ -10,9 +10,9 @@ open import Relation.Binary.PropositionalEquality hiding (Extensionality)
 module FunctorProperties
   where
 
-Op-Op : ∀ {o ℓ} → {ℂ : Category o ℓ} →
-  Op (Op ℂ) ≡ ℂ
-Op-Op {o} {ℓ} {record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc }} = {!!}
+-- Op-Op : ∀ {o ℓ} → {ℂ : Category o ℓ} →
+--   Op (Op ℂ) ≡ ℂ
+-- Op-Op {o} {ℓ} {record { Obj = Obj ; _⇒_ = _⇒_ ; _∘′_ = _∘_ ; id′ = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc }} = {!!}
 
 
 -- F(A, -)
@@ -188,8 +188,8 @@ Lifted-Cat {o₁} {ℓ₁} {o₂} {ℓ₂} ℂ =
   record
     { Obj = Lift (o₁ ⊔ o₂) (Category.Obj ℂ)
     ; _⇒_ = λ A B → Lift ℓ₂ (lower A ⇒[ ℂ ] lower B)
-    ; _∘_ = λ f g → lift (lower f ∘[ ℂ ] lower g)
-    ; id = lift (Category.id ℂ)
+    ; _∘′_ = λ _ _ _ f g → lift (lower f ∘[ ℂ ] lower g)
+    ; id′ = λ _ → lift (Category.id ℂ)
     ; left-id = cong lift (Category.left-id ℂ)
     ; right-id = cong lift (Category.right-id ℂ)
     ; ∘-assoc = cong lift (Category.∘-assoc ℂ)

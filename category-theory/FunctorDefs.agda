@@ -224,12 +224,12 @@ _∘WL_ {_} {_} {_} {_} {_} {_} {A} {B} {C} {F} {G} H α =
 --     }
 
 Op : ∀ {o ℓ} → Category o ℓ → Category o ℓ
-Op record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
+Op 𝓒@record { Obj = Obj ; _⇒_ = _⇒_ ; _∘′_ = _∘′_ ; id′ = id′ ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
   record
     { Obj = Obj
     ; _⇒_ = λ x y → y ⇒ x
-    ; _∘_ = λ f g → g ∘ f
-    ; id = id
+    ; _∘′_ = λ _ _ _ f g → g ∘[ 𝓒 ] f
+    ; id′ = id′
     ; left-id = λ {A} {B} {f} → right-id
     ; right-id = λ {A} {B} {f} → left-id
     ; ∘-assoc = sym ∘-assoc
@@ -353,12 +353,12 @@ lift-to-NT {_} {_} {_} {_} {ℂ} {𝔻} f =
 
 _×cat_ : ∀ {o₁ ℓ₁ o₂ ℓ₂} →
   Category o₁ ℓ₁ → Category o₂ ℓ₂ → Category (o₁ ⊔ o₂) (ℓ₁ ⊔ ℓ₂)
-_×cat_ record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘_ = _∘₁_ ; id = id₁ ; left-id = left-id₁ ; right-id = right-id₁ ; ∘-assoc = ∘-assoc₁ } record { Obj = Obj ; _⇒_ = _⇒_ ; _∘_ = _∘_ ; id = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
+_×cat_ 𝓒@record { Obj = Obj₁ ; _⇒_ = _⇒₁_ ; _∘′_ = _∘₁_ ; id′ = id₁ ; left-id = left-id₁ ; right-id = right-id₁ ; ∘-assoc = ∘-assoc₁ } 𝓓@record { Obj = Obj ; _⇒_ = _⇒_ ; _∘′_ = _∘₂_ ; id′ = id ; left-id = left-id ; right-id = right-id ; ∘-assoc = ∘-assoc } =
   record
     { Obj = Obj₁ × Obj
     ; _⇒_ = λ (x₁ , x₂) (y₁ , y₂) → (x₁ ⇒₁ y₁) × (x₂ ⇒ y₂)
-    ; _∘_ = λ (f₁ , f₂) (g₁ , g₂) → (f₁ ∘₁ g₁) , (f₂ ∘ g₂)
-    ; id = id₁ , id
+    ; _∘′_ = λ _ _ _ (f₁ , f₂) (g₁ , g₂) → (f₁ ∘[ 𝓒 ] g₁) , (f₂ ∘[ 𝓓 ] g₂)
+    ; id′ = λ _ → id₁ _ , id _
     ; left-id = λ {A} {B} {f} → cong₂ _,_ left-id₁ left-id
     ; right-id = cong₂ _,_ right-id₁ right-id
     ; ∘-assoc = cong₂ _,_ ∘-assoc₁ ∘-assoc
@@ -412,8 +412,8 @@ FΔ {_} {_} {ℂ} =
   record
     { Obj = Functor ℂ 𝔻
     ; _⇒_ = λ F G → NatTrans F G
-    ; _∘_ = λ {F} {G} {H} α β → α ∘NT β
-    ; id = record { component = λ x → Category.id 𝔻 ; natural = λ _ _ f → trans left-id (sym right-id) }
+    ; _∘′_ = λ F G H α β → α ∘NT β
+    ; id′ = λ _ → record { component = λ x → Category.id 𝔻 ; natural = λ _ _ f → trans left-id (sym right-id) }
     ; left-id = NatTrans-η (fun-ext λ x → left-id)
     ; right-id = NatTrans-η (fun-ext λ x → right-id)
     ; ∘-assoc = λ {A} {B} {C} {D} {α} {β} {γ} → NatTrans-η (fun-ext λ x → ∘-assoc)

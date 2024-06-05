@@ -302,12 +302,12 @@ module _ where
 
 open import AgdaHom
 
-Yoneda-lemma-NT : ∀ {X : Functor (Op ℂ) Agda} →
-    let
-      p = Hom-Right (Op [ Op ℂ ,, Agda ]) X ∘F {!!}
-    in
-    Set
-  -- NatIso
-  --   -- (Hom (actf よ c) X)
-  --   {!!} -- (lifted (actf X c))
-Yoneda-lemma-NT = {!!}
+-- Yoneda-lemma-NT : ∀ {X : Functor (Op ℂ) Agda} →
+--     let
+--       p = Hom-Right (Op [ Op ℂ ,, Agda ]) X ∘F {!!}
+--     in
+--     Set
+--   -- NatIso
+--   --   -- (Hom (actf よ c) X)
+--   --   {!!} -- (lifted (actf X c))
+-- Yoneda-lemma-NT = {!!}

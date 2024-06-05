@@ -1,6 +1,9 @@
 -- Elementary theory of the category of sets
 
-open import CategoryRecord
+-- open import CategoryRecord
+open import Category
+import ElementaryProperties renaming (𝟙-map to 𝟙-map′; 𝟘-map to 𝟘-map′)
+open import NiceEquiv
 
 open import Agda.Primitive
 open import Data.Product renaming (_×_ to _×₀_ )
@@ -18,16 +21,16 @@ open import Agda hiding (nondegen)
 import AgdaHom
 
 module Sets
-  -- (ℂ : Category lzero (lsuc lzero) (lsuc lzero))
-  (Eq-ℂ : Eq-Category (lsuc lzero) (lsuc lzero))
+  (ℂ : Category lzero (lsuc lzero))
+  -- (Eq-ℂ : Eq-Category (lsuc lzero) (lsuc lzero))
   where
 
-ℂ : Category (lsuc lzero) (lsuc lzero) (lsuc lzero)
-ℂ = Cat Eq-ℂ
+-- ℂ : Category (lsuc lzero) (lsuc lzero) (lsuc lzero)
+-- ℂ = Cat Eq-ℂ
 
-open Category ℂ
-open CategoryProperties ℂ
-  renaming (𝟙-map to 𝟙-map′; 𝟘-map to 𝟘-map′)
+open Category.Category ℂ
+open ElementaryProperties ℂ
+--   renaming (𝟙-map to 𝟙-map′; 𝟘-map to 𝟘-map′)
 
 infixr 2 _×_
 infixr 1 _⊎_
@@ -81,7 +84,7 @@ module SetsProperties
   where
 
   open Sets 𝕍
-  open AgdaHom (suc zero) zero ℂ _≡_ ≡-IsEquivalence cong cong₂
+  open AgdaHom ℂ
 
   neg : (A : Obj) → Set₁
   neg A = A ⇒ 𝟘
@@ -110,9 +113,10 @@ module SetsProperties
   -- Hom-Initial : 
 
   Hom×𝟘 : ∀ {A X : Obj} →
-    CategoryProperties._≅_ Agda′ (Hom A X ×₀ Hom A 𝟘) (Hom A 𝟘)
+    ElementaryProperties._≅_ Agda′ (Hom A X ×₀ Hom A 𝟘) (Hom A 𝟘)
   Hom×𝟘 {A} {X} =
-    (λ x → {!!}) , (λ x → {!!}) , (λ x → {!!}) , λ x → {!!}
+    lift (λ x → {!!}) , {!!} , {!!}
+    --(λ x → {!!}) , (λ x → {!!}) , (λ x → {!!}) , λ x → {!!}
     -- -- (λ x → proj₂ x) , (λ x → ({!!} ∘[Hom] Hom-Initial 𝟘-initial ∘[Hom] x) , {!!}) ,
     -- (λ x → proj₂ x) , (λ x → Hom-𝟘 𝟘-initial x , x) ,
     -- (λ p →

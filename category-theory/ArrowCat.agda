@@ -34,8 +34,8 @@ Interval-Cat =
   record
     { Obj = Fin 2
     ; _⇒_ = Interval-Arr
-    ; _∘_ = comp-def
-    ; id = λ {x} → interval-id x
+    ; _∘′_ = λ _ _ _ → comp-def
+    ; id′ = λ x → interval-id x
     ; left-id = left-id-def
     ; right-id = right-id-def
     ; ∘-assoc = comp-assoc-def
@@ -76,8 +76,8 @@ _↓_ {o₁} {ℓ₁} {o₂} {ℓ₂} {o₃} {ℓ₃} {𝔸} {𝔹} {ℂ} S T =
   record
     { Obj = Obj₀
     ; _⇒_ = _⇒₀_
-    ; _∘_ = _∘₀_
-    ; id = (Category.id ℂ , Category.id ℂ) , trans (Category.right-id ℂ) (sym (Category.left-id ℂ))
+    ; _∘′_ = λ _ _ _ → _∘₀_
+    ; id′ = λ _ → (Category.id ℂ , Category.id ℂ) , trans (Category.right-id ℂ) (sym (Category.left-id ℂ))
     ; left-id = left-id-def
     ; right-id = right-id-def
     ; ∘-assoc = ∘-assoc-def

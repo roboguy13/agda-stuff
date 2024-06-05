@@ -35,15 +35,15 @@ record Category (o ℓ : Level) : Set (lsuc (o ⊔ ℓ)) where
     ∘-assoc : ∀ {A B C D} → ∀ {f : C ⇒ D} {g : B ⇒ C} {h : A ⇒ B} →
                     ((f ∘ g) ∘ h) ≡ (f ∘ (g ∘ h))
 
-Category-η : ∀ {o ℓ} {ℂ 𝔻 : Category o ℓ} →
-  Category.Obj ℂ ≡ Category.Obj 𝔻 →
-  Category._⇒_ ℂ H≅ Category._⇒_ 𝔻 →
-  Category._∘′_ ℂ H≅ Category._∘′_ 𝔻 →
-  Category.id′ ℂ H≅ Category.id′ 𝔻 →
-  ℂ ≡ 𝔻
-Category-η {o} {ℓ} {ℂ} {𝔻} refl refl refl refl
-  with fun-ext (λ x → fun-ext λ y → uip (Category.left-id ℂ {x} {y}) (Category.left-id 𝔻 {x} {y}))
-... | p = {!!}
+-- Category-η : ∀ {o ℓ} {ℂ 𝔻 : Category o ℓ} →
+--   Category.Obj ℂ ≡ Category.Obj 𝔻 →
+--   Category._⇒_ ℂ H≅ Category._⇒_ 𝔻 →
+--   Category._∘′_ ℂ H≅ Category._∘′_ 𝔻 →
+--   Category.id′ ℂ H≅ Category.id′ 𝔻 →
+--   ℂ ≡ 𝔻
+-- Category-η {o} {ℓ} {ℂ} {𝔻} refl refl refl refl
+--   with fun-ext (λ x → fun-ext λ y → uip (Category.left-id ℂ {x} {y}) (Category.left-id 𝔻 {x} {y}))
+-- ... | p = {!!}
 
 Arr : ∀ {o ℓ} (ℂ : Category o ℓ) → Category.Obj ℂ → Category.Obj ℂ → Set ℓ
 Arr = Category._⇒_

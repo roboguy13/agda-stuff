@@ -56,8 +56,8 @@ Agda : Category (suc o) (o ⊔ ℓ)
 Agda = record
   { Obj = Set o
   ; _⇒_ = λ A B → Lift ℓ (A → B)
-  ; _∘_ = λ f g → lift (λ z → lower f (lower g z))
-  ; id = lift λ x → x
+  ; _∘′_ = λ _ _ _ f g → lift (λ z → lower f (lower g z))
+  ; id′ = λ _ → lift λ x → x
   ; left-id = refl
   ; right-id = refl
   ; ∘-assoc = refl
